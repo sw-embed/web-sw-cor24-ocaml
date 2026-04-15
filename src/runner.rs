@@ -21,11 +21,25 @@ use cor24_emulator::{EmulatorCore, StopReason};
 
 use crate::config::{OCAML_LOAD_ADDR, OCAML_P24M, PVM_BIN, label_addr};
 
-/// Per-tick instruction budget. Snobol4 and friends use ~200k; OCaml
-/// interpretation of even small expressions is heavier (we measured
-/// ~6 million pvm instructions for `print_int 42` end-to-end), so a
-/// larger batch keeps the frame budget reasonable.
+/// Per-tick total instruction budget across all inner sub-batches.
+/// Snobol4 and friends use ~200k as a single batch; OCaml is heavier
+/// so we run a larger total budget broken into smaller inner batches
+/// so we can feed UART bytes between them (see `INNER_BATCH`).
 pub const DEFAULT_BATCH: u64 = 1_000_000;
+
+/// Inner sub-batch size between UART feeds. Small enough that the
+/// next source byte is delivered before the interpreter spends much
+/// time busy-polling the UART RX register; large enough to amortize
+/// the per-call overhead of `EmulatorCore::run_batch`. Tuned by
+/// inspection of the OCaml REPL's read loop -- a few hundred cor24
+/// instructions consume a byte and resume polling.
+const INNER_BATCH: u64 = 50_000;
+
+/// Memory-mapped UART status port. Bit 0 set means a byte is sitting
+/// in the RX register waiting to be read; clear means the register
+/// is empty and we can push a fresh byte without overflow.
+const IO_UARTSTAT: u32 = 0xFF_0101;
+const UARTSTAT_RX_READY: u8 = 0x01;
 
 pub struct Session {
     emu: EmulatorCore,
@@ -106,64 +120,83 @@ impl Session {
         self.tick_with_budget(DEFAULT_BATCH)
     }
 
-    pub fn tick_with_budget(&mut self, batch: u64) -> TickResult {
+    pub fn tick_with_budget(&mut self, budget: u64) -> TickResult {
         if self.done {
             return TickResult { done: true };
         }
 
-        // Drain at most one queued RX byte per tick — UART RX is
-        // depth 1 so the previous batch needs to have given the
-        // interpreter time to consume the prior byte. A million
-        // pvm instructions is more than enough for a single GETC
-        // round trip.
-        if let Some(b) = self.rx_queue.pop_front() {
-            self.emu.send_uart_byte(b);
-            if self.rx_queue.is_empty() {
-                self.seeding_source = false;
+        let mut total: u64 = 0;
+        while total < budget {
+            // Feed bytes opportunistically: every time the UART RX
+            // register is empty, push the next queued byte. This
+            // collapses what used to be N ticks of single-byte feed
+            // into one tick that delivers bytes as fast as the
+            // interpreter consumes them.
+            while !self.rx_ready()
+                && let Some(b) = self.rx_queue.pop_front()
+            {
+                self.emu.send_uart_byte(b);
+                if self.rx_queue.is_empty() {
+                    self.seeding_source = false;
+                }
             }
-        }
 
-        let result = self.emu.run_batch(batch);
-        self.instructions += result.instructions_run as u64;
+            let chunk = INNER_BATCH.min(budget - total);
+            let result = self.emu.run_batch(chunk);
+            self.instructions += result.instructions_run as u64;
+            total += result.instructions_run as u64;
 
-        match result.reason {
-            StopReason::Halted => {
-                self.done = true;
-                self.halted = true;
-                self.stop_reason = "halted".into();
-            }
-            StopReason::InvalidInstruction(byte) => {
-                self.done = true;
-                self.stop_reason = format!(
-                    "invalid instruction 0x{:02X} at PC=0x{:06X}",
-                    byte,
-                    self.emu.pc()
-                );
-            }
-            StopReason::Breakpoint(addr) => {
-                self.done = true;
-                self.stop_reason = format!("breakpoint at 0x{:06X}", addr);
-            }
-            StopReason::Paused => {
-                self.done = true;
-                self.stop_reason = "paused".into();
-            }
-            StopReason::StackOverflow(addr) => {
-                self.done = true;
-                self.stop_reason = format!("stack overflow at SP=0x{:06X}", addr);
-            }
-            StopReason::StackUnderflow(addr) => {
-                self.done = true;
-                self.stop_reason = format!("stack underflow at SP=0x{:06X}", addr);
-            }
-            StopReason::CycleLimit => {
-                if result.instructions_run == 0 {
+            match result.reason {
+                StopReason::Halted => {
                     self.done = true;
-                    self.stop_reason = "stalled".into();
+                    self.halted = true;
+                    self.stop_reason = "halted".into();
+                    break;
+                }
+                StopReason::InvalidInstruction(byte) => {
+                    self.done = true;
+                    self.stop_reason = format!(
+                        "invalid instruction 0x{:02X} at PC=0x{:06X}",
+                        byte,
+                        self.emu.pc()
+                    );
+                    break;
+                }
+                StopReason::Breakpoint(addr) => {
+                    self.done = true;
+                    self.stop_reason = format!("breakpoint at 0x{:06X}", addr);
+                    break;
+                }
+                StopReason::Paused => {
+                    self.done = true;
+                    self.stop_reason = "paused".into();
+                    break;
+                }
+                StopReason::StackOverflow(addr) => {
+                    self.done = true;
+                    self.stop_reason = format!("stack overflow at SP=0x{:06X}", addr);
+                    break;
+                }
+                StopReason::StackUnderflow(addr) => {
+                    self.done = true;
+                    self.stop_reason = format!("stack underflow at SP=0x{:06X}", addr);
+                    break;
+                }
+                StopReason::CycleLimit => {
+                    if result.instructions_run == 0 {
+                        self.done = true;
+                        self.stop_reason = "stalled".into();
+                        break;
+                    }
+                    // Loop and run another inner batch.
                 }
             }
         }
         TickResult { done: self.done }
+    }
+
+    fn rx_ready(&self) -> bool {
+        (self.emu.read_byte(IO_UARTSTAT) & UARTSTAT_RX_READY) != 0
     }
 
     pub fn is_done(&self) -> bool {
@@ -245,8 +278,6 @@ mod tests {
     #[test]
     fn print_int_42_runs_to_completion_with_42_in_output() {
         let mut s = Session::new("print_int 42");
-        // OCaml interpretation of even tiny expressions is multi-million
-        // cor24 instructions; allow a generous tick budget.
         run_to_halt(&mut s, 200);
         assert!(
             s.is_done(),
@@ -259,6 +290,10 @@ mod tests {
             s.stop_reason(),
             s.instructions,
             s.output()
+        );
+        eprintln!(
+            "print_int 42: {} cor24 instructions to halt",
+            s.instructions
         );
         assert!(
             s.clean_output().contains("42"),

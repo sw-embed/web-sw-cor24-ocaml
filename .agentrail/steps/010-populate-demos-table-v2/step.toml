@@ -1,9 +1,0 @@
-number = 10
-slug = "populate-demos-table-v2"
-status = "completed"
-description = "Re-instates the populate-demos-table step (originally step 004, aborted). Sam..."
-role = "legacy"
-context_files = []
-created_at = "2026-04-15T12:19:13"
-completed_at = "2026-04-15T12:21:41"
-commits = ["b48d3ff8b1f91a2713b3816601e5f95d82363adf"]

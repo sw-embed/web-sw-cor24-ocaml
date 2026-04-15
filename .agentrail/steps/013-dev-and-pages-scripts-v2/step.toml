@@ -1,9 +1,0 @@
-number = 13
-slug = "dev-and-pages-scripts-v2"
-status = "completed"
-description = "Re-instates step 007. Same body as the original at .agentrail/steps/007-dev-a..."
-role = "legacy"
-context_files = []
-created_at = "2026-04-15T12:33:55"
-completed_at = "2026-04-15T12:41:27"
-commits = ["b1459d119a985313218dde854796bc926e8e4267"]

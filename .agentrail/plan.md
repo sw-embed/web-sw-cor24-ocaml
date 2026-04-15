@@ -1,107 +1,41 @@
-# Saga: live-demo for web-sw-cor24-ocaml
+# Saga: live-demo perf and UX fixes
 
-## Goal
+After the v1 saga shipped a working live demo on http://localhost:9735,
+user review surfaced three issues that need follow-up work:
 
-Port the CLI demos from `../sw-cor24-ocaml` into a browser-based live
-demo, mirroring the pattern used by `../web-sw-cor24-basic`. The end
-result is a Yew + Trunk web app that lets visitors pick an OCaml demo
-from a dropdown, edit the source, run it in a WASM build of the P-code
-VM, and see UART output and (for REPL-style demos) feed input lines.
+1. **Slowness** — single-byte-per-tick UART feeding makes the OCaml
+   interpreter spend most of its cycles in a busy-poll wait for the
+   next source byte. For a 13-byte one-shot program (e.g.
+   `print_int 42` + EOT) that's ~13 million cor24 instructions of
+   busy-waiting before any real work happens.
+2. **Same-line output** — the OCaml REPL (in `ocaml.pas` `lex_init`)
+   echoes every input character to UART before evaluating, so the
+   browser sees `"> print_int 4242"` (prompt + echoed source + result
+   on one line). The CLI's awk pipeline doesn't separate them either,
+   but for a web UI the echo is redundant (the user already sees the
+   source in the editor).
+3. **Errors in some demos** — at least one demo trips. Need to
+   triage demo-by-demo.
 
-## Reference projects
+Fix in three steps; keep each commit independent so any can be
+reverted on its own.
 
-- **CLI source of truth** -- `../sw-cor24-ocaml`
-  - Pipeline: `.ml` -> Pascal OCaml interpreter -> P-code image
-    (`build/ocaml.p24m`), plus pre-assembled PVM (`build/pvm.bin`).
-  - Demos live in `tests/` as `.ml` files (eval_*, demo_*, repl_session).
-  - Demos are actively being added, so the web UI's demo list must be
-    easy to extend.
-- **Web UI reference** -- `../web-sw-cor24-basic`
-  - Yew SPA, Trunk build, `src/runner.rs` is a WASM-native port of the
-    P-code VM (pv24t) that loads a `.p24`-style binary.
-  - `src/demos.rs` is a static table of `{ name, source, interactive }`
-    entries, with `include_str!` pulling sources from an `examples/`
-    directory.
-  - `build.rs` copies the compiled `.p24` asset into `OUT_DIR` and
-    stamps build metadata (SHA, host, timestamp).
-  - Scripts: `scripts/build-pages.sh` (release build for GitHub Pages)
-    and `scripts/serve.sh` (dev server on port 9072) with a mkdir lock
-    to prevent two Trunk pipelines from racing on `dist/`.
+## Approach
 
-## Architecture (target)
+- **Slowness fix**: in `Session::tick()`, interleave UART feeding
+  with small inner batches. Use `emu.read_byte(IO_UARTSTAT) & 0x01`
+  to detect when the RX register is empty, push the next byte
+  immediately, then continue the batch. Inner batch ~50k cor24
+  instructions; outer cap stays at the existing per-tick budget.
+- **Echo-strip**: extend `clean_output()` to recognize the REPL's
+  prompt-then-echoed-line pattern (`"> ...\n"`) and elide it. Keep
+  the result lines.
+- **Demo triage**: walk the 13 demos in the running app, note which
+  fail, fix the underlying issue (likely in source delivery, the
+  awaiting-input heuristic, or the budget escalator UX). Document
+  per-demo behavior in `docs/demos.md` if it changed.
 
-```
-web-sw-cor24-ocaml/
-  Cargo.toml              # yew, wasm-bindgen, gloo, web-sys, pa24r
-  Trunk.toml              # dist/, port 9735 (reserved for this project)
-  build.rs                # copy ocaml.p24m + pvm.bin into OUT_DIR;
-                          # stamp BUILD_SHA / BUILD_HOST / BUILD_TIMESTAMP
-  index.html              # Trunk rust bin, CSS link, favicon
-  assets/
-    ocaml.p24m            # vendored from sw-cor24-ocaml/build/
-    pvm.bin               # vendored from sw-cor24-ocaml/build/
-    code_ptr_addr.txt     # resolved code_ptr (needed for patch)
-  examples/
-    *.ml                  # mirrored subset of sw-cor24-ocaml/tests/*.ml
-  src/
-    lib.rs                # Yew App (picker, editor, output, input row)
-    main.rs               # yew renderer entry
-    demos.rs              # static DEMOS table, include_str! from examples/
-    runner.rs             # PVM WASM port, adapted for OCaml image layout:
-                          #   - load pvm.bin at 0, ocaml.p24m at 0x010000
-                          #   - patch code_ptr to 0x010000
-                          #   - feed .ml source to UART stdin terminated \x04
-                          #   - capture UART output
-    config.rs             # default demo, memory size, budget
-    ui.css                # ported from web-sw-cor24-basic
-  scripts/
-    build-pages.sh        # trunk build --release --public-url ...
-    serve.sh              # trunk serve --port 9735 with dist lock
-    vendor-artifacts.sh   # rebuild ocaml.p24m/pvm.bin from ../sw-cor24-ocaml
-  pages/                  # gh-pages output (gitignored contents except .nojekyll)
-  docs/
-    demos.md              # per-demo documentation
-```
-
-## Key design choices
-
-- **Runner approach: COR24 emulator running the real pvm.s**, matching
-  the pattern used by `../web-sw-cor24-pascal`, `snobol4`, `forth`,
-  `macrolisp`, `plsw`, `tinyc`, `apl`, etc. The BASIC project's
-  approach (pure-Rust p-code interpreter via `pa24r`) was tried first
-  for this project (step 003 as originally scoped) but rejected on
-  review: it duplicates `pvm.s`, forces us to reimplement multi-unit
-  XCall / IRT handling, and drifts from the CLI. Step 003 is redone
-  (`009-redo-port-pvm-runner-with-emulator`) to vendor the real
-  `pvm.bin` via `cor24_emulator::Assembler` at build time and
-  delegate execution to `cor24_emulator::EmulatorCore`. OCaml
-  specifically maps onto this cleanly: `.p24m` already has absolute
-  addresses baked by `p24-load --load-addr 0x010000`, so no runtime
-  relocation is needed — just load pvm.bin at 0, load ocaml.p24m at
-  0x010000, jump pvm straight to `vm_loop` (skipping its boot banner
-  as pascal does), and drive the session via `emu.run_batch()` +
-  UART I/O.
-- **Vendoring vs. live build**: the artifacts (`ocaml.p24m`, `pvm.bin`)
-  are produced by the CLI's Pascal-on-P-code toolchain, which is too
-  heavyweight to run inside `cargo build`. Vendor the binaries into
-  `assets/` via a standalone `scripts/vendor-artifacts.sh` that invokes
-  the CLI's `just build` and copies out the artifacts plus the
-  `code_ptr_addr.txt`.
-- **Demo list extensibility**: `src/demos.rs` uses `include_str!` from
-  a local `examples/` directory. A helper script syncs chosen demos
-  from `../sw-cor24-ocaml/tests/` into `examples/` so the web demo
-  list stays close to the CLI's. Not every CLI test is a demo -- cherry
-  pick the user-facing ones (demo_*, eval_fact, eval_pairs, repl_session,
-  etc.).
-- **Interactive demos**: the `repl_session.ml` flow maps onto the same
-  `awaiting_input` + input-row mechanism the BASIC app uses. The OCaml
-  interpreter reads expressions from UART delimited by `\x04`, so the
-  session wiring needs to convert each submitted input line into an
-  appended UART byte stream + terminator.
-
-## Out of scope (future sagas)
-
-- Automated CI to rebuild `assets/` from the CLI on every commit.
-- Per-demo documentation pages with walk-throughs.
-- Embedding the CLI's regression suite as browser smoke tests.
-- A "share link" feature that encodes source in the URL.
+Out of scope:
+- Restructuring the UI's run loop into a worker thread.
+- Replacing the OCaml REPL's echo behavior in the upstream
+  Pascal interpreter (would diverge from the CLI).
