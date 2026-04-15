@@ -1,6 +1,6 @@
 number = 4
 slug = "populate-demos-table"
-status = "pending"
+status = "blocked"
 description = """
 # Populate demos table from CLI tests
 

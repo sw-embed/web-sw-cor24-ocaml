@@ -65,10 +65,22 @@ web-sw-cor24-ocaml/
 
 ## Key design choices
 
-- **Use pa24r as a library dep (path = `../sw-cor24-pcode/assembler`)**
-  only if the runner needs assembly; otherwise prefer a pure-Rust port
-  of the PVM (same approach as web-sw-cor24-basic `runner.rs`) and drop
-  the dep. Decide in the runner-port step.
+- **Runner approach: COR24 emulator running the real pvm.s**, matching
+  the pattern used by `../web-sw-cor24-pascal`, `snobol4`, `forth`,
+  `macrolisp`, `plsw`, `tinyc`, `apl`, etc. The BASIC project's
+  approach (pure-Rust p-code interpreter via `pa24r`) was tried first
+  for this project (step 003 as originally scoped) but rejected on
+  review: it duplicates `pvm.s`, forces us to reimplement multi-unit
+  XCall / IRT handling, and drifts from the CLI. Step 003 is redone
+  (`009-redo-port-pvm-runner-with-emulator`) to vendor the real
+  `pvm.bin` via `cor24_emulator::Assembler` at build time and
+  delegate execution to `cor24_emulator::EmulatorCore`. OCaml
+  specifically maps onto this cleanly: `.p24m` already has absolute
+  addresses baked by `p24-load --load-addr 0x010000`, so no runtime
+  relocation is needed — just load pvm.bin at 0, load ocaml.p24m at
+  0x010000, jump pvm straight to `vm_loop` (skipping its boot banner
+  as pascal does), and drive the session via `emu.run_batch()` +
+  UART I/O.
 - **Vendoring vs. live build**: the artifacts (`ocaml.p24m`, `pvm.bin`)
   are produced by the CLI's Pascal-on-P-code toolchain, which is too
   heavyweight to run inside `cargo build`. Vendor the binaries into
