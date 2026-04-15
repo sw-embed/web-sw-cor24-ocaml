@@ -1,6 +1,6 @@
 number = 1
 slug = "speed-up-uart-source-feed"
-status = "in-progress"
+status = "completed"
 description = """
 # Speed up source delivery via opportunistic UART feeding
 
@@ -8,4 +8,5 @@ The OCaml interpre..."""
 role = "production"
 context_files = []
 created_at = "2026-04-15T13:20:15"
-commits = []
+completed_at = "2026-04-15T13:21:29"
+commits = ["da49513243d9946411cc0996f745eb33ca9e998e"]
