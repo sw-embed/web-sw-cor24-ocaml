@@ -1,6 +1,6 @@
 number = 1
 slug = "sync-demos"
-status = "in-progress"
+status = "completed"
 description = """
 # Sync demos from ../sw-cor24-ocaml/tests/
 
@@ -8,4 +8,5 @@ Run `./scripts/sync-demos.sh` to ..."""
 role = "production"
 context_files = []
 created_at = "2026-04-15T16:30:13"
-commits = []
+completed_at = "2026-04-15T16:33:31"
+commits = ["1418c4e9f11b392028175ed32239b744973ef845"]

@@ -1,0 +1,1 @@
+Added .github/workflows/pages.yml mirroring the sibling web-sw-cor24-basic workflow: push-to-main + workflow_dispatch triggers, upload-pages-artifact@v3 against ./pages, deploy-pages@v4. Verified pages/.nojekyll still in place.

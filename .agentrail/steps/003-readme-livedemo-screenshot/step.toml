@@ -1,0 +1,12 @@
+number = 3
+slug = "readme-livedemo-screenshot"
+status = "completed"
+description = """
+# Live-demo link, screenshot, README polish
+
+Rebuild pages/ via ./scripts/bui..."""
+role = "legacy"
+context_files = []
+created_at = "2026-04-15T16:34:10"
+completed_at = "2026-04-15T16:41:02"
+commits = ["af2f311de6547c28717459d7a7885742fac73ec5"]

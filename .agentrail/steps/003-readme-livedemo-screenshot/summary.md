@@ -1,0 +1,1 @@
+Rebuilt pages/ via build-pages.sh, ran the lists-pairs-demo end-to-end against a trunk serve via Playwright, captured images/screenshot-demo.png (1400x900). Restructured README front matter to match web-sw-cor24-basic: title, blurb, Live demo link, inline screenshot with ?ts=1776296382537 cache-bust from ep2ms; removed the TODO Screenshot stub.

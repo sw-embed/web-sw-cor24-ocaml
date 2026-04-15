@@ -1,0 +1,1 @@
+Added 4 new demos to the browser catalog (higher-order-lists, function-keyword, function-pattern-args, when-guards) by extending scripts/sync-demos.sh MAPPING, src/demos.rs, docs/demos.md, and the README table. cargo test --lib passes (6 tests).

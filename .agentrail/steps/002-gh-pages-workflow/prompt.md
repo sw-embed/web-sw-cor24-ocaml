@@ -1,0 +1,3 @@
+# Add GitHub Actions workflow for GitHub Pages deploy
+
+Create .github/workflows/pages.yml mirroring ../web-sw-cor24-basic/.github/workflows/pages.yml. Triggers: push to main + workflow_dispatch. Permissions: contents:read, pages:write, id-token:write. Concurrency group 'pages'. Single 'deploy' job on ubuntu-latest with environment 'github-pages' and page_url output, steps: actions/checkout@v4, actions/upload-pages-artifact@v3 with path ./pages, actions/deploy-pages@v4. Verify pages/.nojekyll still exists. Commit just the workflow file.
