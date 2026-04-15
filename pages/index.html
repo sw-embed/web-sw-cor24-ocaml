@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>web-sw-cor24-ocaml</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    
+    <link rel="stylesheet" href="/web-sw-cor24-ocaml/ui-e1a165f33e7d0afb.css" integrity="sha384-AJjZB215hwMXBo+0ybav/wJ6zf3qbPnshJ8ZERb6ohyoIG3trZ0ogKS5wtJUpLvw"/>
+    
+<script type="module">
+import init, * as bindings from '/web-sw-cor24-ocaml/web-sw-cor24-ocaml-ba0dd71fef2a3001.js';
+const wasm = await init({ module_or_path: '/web-sw-cor24-ocaml/web-sw-cor24-ocaml-ba0dd71fef2a3001_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+  <link rel="modulepreload" href="/web-sw-cor24-ocaml/web-sw-cor24-ocaml-ba0dd71fef2a3001.js" crossorigin="anonymous" integrity="sha384-y8ICvsrsFD9Wz3dyjb/0JFp7aqvAjAr1LUl2TKDABaQJ0tDHQJzQHT7FMYNrf5w0"><link rel="preload" href="/web-sw-cor24-ocaml/web-sw-cor24-ocaml-ba0dd71fef2a3001_bg.wasm" crossorigin="anonymous" integrity="sha384-puGwkFh7YR0WABmc+8mCuHjfzdV+kfTJKN0LWul5W3PoBGDE5rlNBoeJPqPhyGjC" as="fetch" type="application/wasm"></head>
+  <body></body>
+</html>

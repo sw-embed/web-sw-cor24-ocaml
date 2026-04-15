@@ -1,5 +1,3 @@
 target/
 dist/
-pages/*
-!pages/.nojekyll
 .claude/
