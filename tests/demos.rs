@@ -135,3 +135,4 @@ fn repl_session_reaches_awaiting_input() {
 // const surfaces here, not in a downstream consumer.
 #[allow(dead_code)]
 const _: u64 = DEFAULT_BATCH;
+

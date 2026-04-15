@@ -496,3 +496,35 @@ print_int 99
 ```
 
 The session stays open; further inputs print their values inline.
+
+### Typing your own input
+
+The Pascal OCaml interpreter parses each line of REPL input as a
+single expression that reduces to a value. It does **not** accept
+bare top-level `let` bindings (those are a concession in real
+OCaml's toplevel that this interpreter doesn't make).
+
+**Works:**
+
+```ocaml
+42
+1 + 1
+let x = 42 in x
+let f x = x * 2 in f 21
+let rec fact n = if n = 0 then 1 else n * fact (n - 1) in fact 5
+print_int 99
+```
+
+**Fails** (each produces `PARSE ERROR`):
+
+```ocaml
+let x = 42
+let add x y = x + y
+let f x = x + 1
+```
+
+If you want the effect of a top-level binding, wrap the rest of
+your session in `let ... in` and put the value you want on the
+right-hand side. For function definitions you'll test repeatedly,
+just edit the demo in the source pane on the left -- that's what
+the source editor is for.

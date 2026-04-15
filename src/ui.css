@@ -294,6 +294,18 @@ footer a:hover {
   border-radius: 3px;
 }
 
+.input-hint {
+  margin: 4px 0 0 0;
+  font-size: 0.75em;
+  font-style: italic;
+  color: var(--text-dim);
+}
+.input-hint code {
+  font-family: var(--mono);
+  font-style: normal;
+  color: var(--accent);
+}
+
 /* ── Hardware panel (S2 + D2) ──
  * Floats bottom-right of the viewport. Top-right is taken by the
  * octocat corner; we don't compete for that space. */

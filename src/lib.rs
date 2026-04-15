@@ -409,18 +409,26 @@ impl Component for App {
                     <pre class="out" ref={self.output_ref.clone()}>{ &self.output }</pre>
                     { if self.awaiting_input {
                         html! {
-                            <div class="input-row">
-                                <label>{ "input:" }</label>
-                                <input
-                                    ref={self.input_ref.clone()}
-                                    type="text"
-                                    value={self.input_line.clone()}
-                                    oninput={on_input_change}
-                                    onkeydown={on_input_keydown}
-                                    autofocus=true
-                                />
-                                <button onclick={on_input_submit}>{ "Send" }</button>
-                            </div>
+                            <>
+                                <div class="input-row">
+                                    <label>{ "input:" }</label>
+                                    <input
+                                        ref={self.input_ref.clone()}
+                                        type="text"
+                                        value={self.input_line.clone()}
+                                        oninput={on_input_change}
+                                        onkeydown={on_input_keydown}
+                                        autofocus=true
+                                    />
+                                    <button onclick={on_input_submit}>{ "Send" }</button>
+                                </div>
+                                <p class="input-hint">
+                                    { "tip: each input must be a complete expression. \
+                                       `let` forms require an `in` clause, e.g. " }
+                                    <code>{ "let x = 42 in x" }</code>
+                                    { "." }
+                                </p>
+                            </>
                         }
                     } else { html! {} }}
                 </section>

@@ -125,7 +125,9 @@ pub static DEMOS: &[Demo] = &[
         name: "repl-session",
         source: include_str!("../examples/repl-session.ml"),
         interactive: true,
-        description: "Multi-expression REPL session — type more lines after the seed runs.",
+        description: "Multi-expression REPL session -- type more lines after the seed runs. \
+                      Each input must be a complete expression: `let x = 42 in x`, not bare \
+                      `let x = 42`.",
     },
 ];
 
