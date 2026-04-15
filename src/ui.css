@@ -1,0 +1,14 @@
+.page {
+    font-family: system-ui, sans-serif;
+    max-width: 60rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+.placeholder {
+    color: #666;
+}
+.build {
+    color: #999;
+    font-size: 0.8rem;
+    font-family: ui-monospace, monospace;
+}
