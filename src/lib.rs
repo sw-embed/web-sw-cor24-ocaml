@@ -1,5 +1,8 @@
 use yew::prelude::*;
 
+pub mod config;
+pub mod runner;
+
 pub struct App;
 
 impl Component for App {
