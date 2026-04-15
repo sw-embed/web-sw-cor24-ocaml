@@ -1,0 +1,1 @@
+Added a small input-hint caption under the REPL input row explaining that each input must be a complete expression and that let forms need 'in <expr>'. Updated repl-session demo description, expanded docs/demos.md with a Works/Fails breakdown, removed the temporary probe_repl_let_forms test. cargo test (6+2) passes; trunk build + markdown-checker clean. Saga done.

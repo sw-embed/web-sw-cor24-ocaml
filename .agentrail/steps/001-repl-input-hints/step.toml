@@ -1,0 +1,12 @@
+number = 1
+slug = "repl-input-hints"
+status = "completed"
+description = """
+# REPL input hints + docs for the `in` requirement
+
+See the plan for the full..."""
+role = "production"
+context_files = []
+created_at = "2026-04-15T14:24:00"
+completed_at = "2026-04-15T14:26:37"
+commits = ["5c2a8b22711681c84710f0203829b80d7844e442"]
