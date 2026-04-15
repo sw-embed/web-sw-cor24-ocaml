@@ -38,6 +38,17 @@ MAPPING=(
     "repl_session:repl-session"
 )
 
+# Demos whose source is one logical expression that spans multiple
+# physical lines via semicolon-sequencing or `let ... in` chaining.
+# The OCaml REPL reads line-by-line and parses each line as a
+# standalone top-level expression, so a trailing `;` on a line is a
+# parse error in the web context. Collapsing newlines to spaces
+# preserves the program's semantics while making it a single REPL
+# input. Demos NOT in this list (pairs.ml, lists.ml, list-module.ml,
+# repl-session.ml) genuinely have one independent expression per
+# line and must be left as-is.
+COLLAPSE_NEWLINES=("led-blink" "led-toggle")
+
 echo "Syncing demos from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
 for entry in "${MAPPING[@]}"; do
     src="${entry%%:*}"
@@ -49,7 +60,15 @@ for entry in "${MAPPING[@]}"; do
         continue
     fi
     cp "$src_path" "$dst_path"
-    printf "  %-22s <- tests/%s.ml\n" "$dst.ml" "$src"
+    if [[ " ${COLLAPSE_NEWLINES[*]} " =~ " $dst " ]]; then
+        # Collapse newlines to spaces so the multi-line source is one
+        # REPL input. Trim trailing whitespace.
+        tr '\n' ' ' < "$dst_path" | sed -e 's/[[:space:]]*$//' > "$dst_path.tmp"
+        mv "$dst_path.tmp" "$dst_path"
+        printf "  %-22s <- tests/%s.ml [newlines collapsed]\n" "$dst.ml" "$src"
+    else
+        printf "  %-22s <- tests/%s.ml\n" "$dst.ml" "$src"
+    fi
 done
 
 # Hand-written hello.ml: default demo so first-time visitors see

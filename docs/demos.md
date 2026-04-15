@@ -236,19 +236,21 @@ On the real board the LED toggles; in the browser the runner stubs
 the LED I/O (`SYS 3` is a no-op), so you only see the `print_int`
 side effects, but the program runs through cleanly.
 
+(`scripts/sync-demos.sh` collapses this demo's newlines into one
+REPL line so the semicolon-sequenced expression is parsed as a
+single input -- the OCaml REPL treats each line as an independent
+top-level expression.)
+
 ```ocaml
-led_on ();
-print_int 1;
-led_off ();
-print_int 0;
-led_on ();
-print_int 1
+led_on (); print_int 1; led_off (); print_int 0; led_on (); print_int 1
 ```
 
-**Expected output:**
+**Expected output:** (one number per `print_int`, on its own line)
 
 ```
-101
+1
+0
+1
 ```
 
 ---
@@ -257,19 +259,25 @@ print_int 1
 
 Tail-recursive loop that reads the COR24 switch and reflects it on
 the LED. In the browser `switch ()` always returns `false` (`SYS 6`
-returns 0), so this loops forever doing nothing observable. Use
-**Stop** (or **Esc**) to halt; it's a useful demo of the budget /
-escalator UI.
+returns 0). The OCaml interpreter is *not* tail-call-optimized, so
+each `loop ()` call grows the interp's call stack until it
+exhausts -- the runtime catches that and prints `EVAL ERROR` instead
+of trapping the VM. On the real COR24 board with a working switch
+this would still loop; on the web emulator it terminates cleanly
+after a few thousand iterations.
+
+(`scripts/sync-demos.sh` collapses this demo's newlines for the
+same REPL-line-parsing reason as `led-blink`.)
 
 ```ocaml
-let rec loop = fun u ->
-  let s = switch () in
-  set_led s;
-  loop ()
-in loop ()
+let rec loop = fun u -> let s = switch () in set_led s; loop () in loop ()
 ```
 
-**Expected output:** (none -- runs until stopped or budget halts)
+**Expected output:**
+
+```
+EVAL ERROR
+```
 
 ---
 
