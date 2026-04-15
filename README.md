@@ -2,10 +2,20 @@
 
 Browser-based live demo for the
 [sw-cor24-ocaml](https://github.com/sw-embed/sw-cor24-ocaml)
-integer-subset OCaml interpreter. The interpreter is written in Pascal,
-compiled to p-code, and runs on the canonical COR24 p-code VM
-(`pvm.s`); this project assembles `pvm.s` with the COR24 emulator at
-build time and runs it inside the browser via WebAssembly. No backend.
+integer-subset OCaml interpreter.
+
+**Live demo**: https://sw-embed.github.io/web-sw-cor24-ocaml/
+
+Part of the [Software Wrighter COR24 Tools Project](https://sw-embed.github.io/web-sw-cor24-demos/#/).
+
+![lists-pairs-demo screenshot](images/screenshot-demo.png?ts=1776296382537)
+
+## Intro
+
+The interpreter is written in Pascal, compiled to p-code, and runs on
+the canonical COR24 p-code VM (`pvm.s`); this project assembles
+`pvm.s` with the COR24 emulator at build time and runs it inside the
+browser via WebAssembly. No backend.
 
 Same architecture as the rest of the `web-sw-cor24-*` family
 (`pascal`, `snobol4`, `forth`, ...): one Yew SPA, one Trunk build,
@@ -118,11 +128,6 @@ cargo test --lib
   `demos::tests::names_are_unique`,
   `demos::tests::only_repl_session_is_interactive` --
   catalog invariants.
-
-## Screenshot
-
-(TODO: capture and add `images/screenshot.png` after the first
-public deploy.)
 
 ## Related projects
 
