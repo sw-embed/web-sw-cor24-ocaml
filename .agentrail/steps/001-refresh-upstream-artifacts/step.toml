@@ -1,0 +1,11 @@
+number = 1
+slug = "refresh-upstream-artifacts"
+status = "in-progress"
+description = """
+# Refresh upstream pvm.s and ocaml.p24m
+
+Pull the latest `asm/pvm.s` and `ass..."""
+role = "production"
+context_files = []
+created_at = "2026-04-15T13:34:32"
+commits = []

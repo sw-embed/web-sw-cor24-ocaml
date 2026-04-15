@@ -1,41 +1,59 @@
-# Saga: live-demo perf and UX fixes
+# Saga: refresh upstream, expand demos, add hardware panel
 
-After the v1 saga shipped a working live demo on http://localhost:9735,
-user review surfaced three issues that need follow-up work:
+User-driven follow-up after saga 2 review. Three buckets, three steps.
 
-1. **Slowness** — single-byte-per-tick UART feeding makes the OCaml
-   interpreter spend most of its cycles in a busy-poll wait for the
-   next source byte. For a 13-byte one-shot program (e.g.
-   `print_int 42` + EOT) that's ~13 million cor24 instructions of
-   busy-waiting before any real work happens.
-2. **Same-line output** — the OCaml REPL (in `ocaml.pas` `lex_init`)
-   echoes every input character to UART before evaluating, so the
-   browser sees `"> print_int 4242"` (prompt + echoed source + result
-   on one line). The CLI's awk pipeline doesn't separate them either,
-   but for a web UI the echo is redundant (the user already sees the
-   source in the editor).
-3. **Errors in some demos** — at least one demo trips. Need to
-   triage demo-by-demo.
+## Why
 
-Fix in three steps; keep each commit independent so any can be
-reverted on its own.
+1. **Stale upstream**. `assets/ocaml.p24m` was vendored at 30961 B
+   from a build that predates three new language features upstream:
+   strings (`String.length`, `print_endline`, concat), function-form
+   `let f x y = body`, and named ADTs (`type T = C1 | C2`). Latest
+   image is 39870 B. `asm/pvm.s` is unchanged vs vendored copy --
+   the VM didn't move.
+2. **Missing demos**. Upstream `tests/` has 21 `.ml` files not in
+   `scripts/sync-demos.sh`'s mapping. Most are basic eval cases
+   redundant with what we already ship; six are
+   user-interesting demos exercising the new language features:
+   `eval_strings`, `eval_named_adts`, `eval_function_form_let`,
+   `eval_options`, `demo_patterns`, `eval_let_destructure`. Skip the
+   `lex_*` regression tests entirely.
+3. **No hardware panel**. Every other `web-sw-cor24-*` project that
+   uses `cor24-emulator` exposes a small floating panel with the S2
+   switch (clickable to toggle) and the D2 LED indicator (driven by
+   `emu.is_led_on()`). The `led-toggle` demo is unusable without it
+   -- and even with it, the demo currently traps with `EVAL ERROR`
+   because the OCaml interp's `loop ()` recursion isn't tail-call
+   optimised, so the call stack overflows after a few thousand
+   iterations. Need to either rewrite the demo to a finite loop or
+   document the boundedness explicitly.
 
-## Approach
+## Architecture for the hardware panel
 
-- **Slowness fix**: in `Session::tick()`, interleave UART feeding
-  with small inner batches. Use `emu.read_byte(IO_UARTSTAT) & 0x01`
-  to detect when the RX register is empty, push the next byte
-  immediately, then continue the batch. Inner batch ~50k cor24
-  instructions; outer cap stays at the existing per-tick budget.
-- **Echo-strip**: extend `clean_output()` to recognize the REPL's
-  prompt-then-echoed-line pattern (`"> ...\n"`) and elide it. Keep
-  the result lines.
-- **Demo triage**: walk the 13 demos in the running app, note which
-  fail, fix the underlying issue (likely in source delivery, the
-  awaiting-input heuristic, or the budget escalator UX). Document
-  per-demo behavior in `docs/demos.md` if it changed.
+Mirror `../web-sw-cor24-apl/src/hardware.rs`:
 
-Out of scope:
-- Restructuring the UI's run loop into a worker thread.
-- Replacing the OCaml REPL's echo behavior in the upstream
-  Pascal interpreter (would diverge from the CLI).
+- New `src/hardware.rs` defines a `HardwarePanel` function component
+  with props `{ led_on, s2_on, on_s2_toggle }`. Initial scope drops
+  TX/RX byte display (we don't need it for OCaml's REPL UX; can
+  add later if useful).
+- `App` gains two state fields `led_on: bool`, `s2_on: bool` and a
+  `Msg::ToggleS2` variant.
+- `Session` gains:
+  - `set_switch(&mut self, on: bool)` -- forwards to
+    `emu.set_button_pressed(on)`. Pushed once per tick before
+    `run_batch`.
+  - `led_on(&self) -> bool` -- returns `emu.is_led_on()`.
+- Tick loop: before each inner batch, push s2; after each inner
+  batch, sample led; if changed, dispatch a render.
+- CSS: port `.hw-panel`, `.hw-led*`, `.hw-switch*`, `.hw-row`,
+  `.hw-label`, `.hw-title` from APL's `app.css`. Floating panel,
+  fixed top-right under the octocat (or bottom-right -- pick one
+  that doesn't collide with the corner SVG; APL has it floating).
+
+## Out of scope
+
+- TX/RX byte indicators in the hardware panel (APL has them; defer
+  for OCaml since UART is the source channel and a single byte
+  display is misleading for line-buffered REPL input).
+- Auto-refresh upstream artifacts in CI.
+- Rewriting `pvm.s` or the OCaml interpreter.
+- Tail-call optimisation in the interp.
