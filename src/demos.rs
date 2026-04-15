@@ -56,6 +56,12 @@ pub static DEMOS: &[Demo] = &[
         description: "`List.length`, `List.rev`, qualified-name lookups.",
     },
     Demo {
+        name: "higher-order-lists",
+        source: include_str!("../examples/higher-order-lists.ml"),
+        interactive: false,
+        description: "`List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas.",
+    },
+    Demo {
         name: "lists-pairs-demo",
         source: include_str!("../examples/lists-pairs-demo.ml"),
         interactive: false,
@@ -92,6 +98,18 @@ pub static DEMOS: &[Demo] = &[
         description: "Sugared `let f x y = body` form (curried function definitions).",
     },
     Demo {
+        name: "function-keyword",
+        source: include_str!("../examples/function-keyword.ml"),
+        interactive: false,
+        description: "The `function` keyword: shorthand for `fun x -> match x with ...`.",
+    },
+    Demo {
+        name: "function-pattern-args",
+        source: include_str!("../examples/function-pattern-args.ml"),
+        interactive: false,
+        description: "Destructuring patterns directly in function arguments: `let swap (x, y) = ...`.",
+    },
+    Demo {
         name: "strings",
         source: include_str!("../examples/strings.ml"),
         interactive: false,
@@ -114,6 +132,12 @@ pub static DEMOS: &[Demo] = &[
         source: include_str!("../examples/patterns.ml"),
         interactive: false,
         description: "Pattern matching across lists, tuples, options, and literals.",
+    },
+    Demo {
+        name: "when-guards",
+        source: include_str!("../examples/when-guards.ml"),
+        interactive: false,
+        description: "`match ... when <guard>` clauses for conditional pattern arms (abs, sign).",
     },
     Demo {
         name: "let-destructure",

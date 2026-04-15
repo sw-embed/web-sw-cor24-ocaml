@@ -1,0 +1,1 @@
+BLOCKED: Deferred: superseded by 009-redo-port-pvm-runner-with-emulator, which must complete first because demo wiring depends on the new Session API shape. Step 004's prompt will be re-added after the redo.

@@ -166,6 +166,30 @@ false
 
 ---
 
+## higher-order-lists
+
+The classic functional-programming trio over the built-in `List`
+module: `map`, `filter`, `fold_left`, plus `iter` for side-effecting
+traversal. Lambdas are passed inline; the last line reverses a list
+via `fold_left` with `::`.
+
+```ocaml
+List.map (fun x -> x * 2) [1;2;3]
+List.map (fun x -> x + 1) []
+List.filter (fun x -> x mod 2 = 0) [1;2;3;4;5;6]
+List.filter (fun x -> x > 10) [1;5;15;20;3]
+List.fold_left (fun acc x -> acc + x) 0 [1;2;3;4]
+List.fold_left (fun acc x -> acc * x) 1 [1;2;3;4;5]
+List.iter (fun x -> print_int x) [10;20;30]
+let inc x = x + 1 in List.map inc [1;2;3]
+List.fold_left (fun acc x -> x :: acc) [] [1;2;3]
+```
+
+**Expected output:** each line's value is echoed; `List.iter`
+prints the three integers via UART and then echoes its unit result.
+
+---
+
 ## lists-pairs-demo
 
 A larger program mixing recursion, lists, pairs, and qualified names.
@@ -311,6 +335,64 @@ Some 7
 
 ---
 
+## function-keyword
+
+The `function` keyword is shorthand for `fun x -> match x with ...`.
+Useful when the only thing a function does is pattern-match on its
+sole argument. Also demonstrated inline at an application site
+(`(function ...) 0`) and with richer patterns over lists and options.
+
+```ocaml
+let f = function 0 -> 100 | 1 -> 101 | _ -> 999 in f 0
+let f = function 0 -> 100 | 1 -> 101 | _ -> 999 in f 1
+let f = function 0 -> 100 | 1 -> 101 | _ -> 999 in f 5
+let f = function [] -> 0 | h :: t -> h in f [42; 99]
+(function 0 -> 100 | _ -> 0) 0
+let classify = function Some n -> n | None -> 0 in classify (Some 42)
+let classify = function Some n -> n | None -> 0 in classify None
+```
+
+**Expected output:**
+
+```
+100
+101
+999
+42
+100
+42
+0
+```
+
+---
+
+## function-pattern-args
+
+Destructuring patterns in the argument position of a function
+definition. `let swap (x, y) = ...` binds `x` and `y` directly
+from the incoming tuple, and the same works for nested tuples,
+list cons, and unit.
+
+```ocaml
+let swap (x, y) = (y, x) in swap (1, 2)
+let sum (a, (b, c)) = a + b + c in sum (1, (2, 3))
+let head (h :: _) = h in head [1; 2; 3]
+let f () = 42 in f ()
+let add (x, y) = x + y in add (3, 4)
+```
+
+**Expected output:**
+
+```
+(2, 1)
+6
+1
+42
+7
+```
+
+---
+
 ## strings
 
 String literals, `^` concatenation, `print_endline` (which writes
@@ -435,6 +517,35 @@ None
 100
 999
 (2, 1)
+```
+
+---
+
+## when-guards
+
+`match` arms can be qualified with a `when <bool-expr>` guard, so
+the arm fires only if the pattern matches *and* the guard is true.
+Used below to implement `abs` and `sign`, and to chain guarded
+arms against a fresh match subject.
+
+```ocaml
+let abs x = match x with n when n < 0 -> -n | n -> n in abs (-5)
+let abs x = match x with n when n < 0 -> -n | n -> n in abs 7
+let sign x = match x with n when n < 0 -> -1 | 0 -> 0 | _ -> 1 in sign (-10)
+let sign x = match x with n when n < 0 -> -1 | 0 -> 0 | _ -> 1 in sign 0
+let sign x = match x with n when n < 0 -> -1 | 0 -> 0 | _ -> 1 in sign 99
+match 7 with n when n > 10 -> "big" | n when n > 5 -> "mid" | _ -> "small"
+```
+
+**Expected output:**
+
+```
+5
+7
+-1
+0
+1
+"mid"
 ```
 
 ---

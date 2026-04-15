@@ -1,0 +1,1 @@
+Wrote scripts/vendor-artifacts.sh; ran it to produce assets/ocaml.p24m (30961 B), assets/pvm.bin (8798 B), assets/code_ptr_addr.txt (0x1047). Extended build.rs to stage both binaries into OUT_DIR and expose CODE_PTR env var plus cargo:rerun-if-changed lines. cargo check clean.

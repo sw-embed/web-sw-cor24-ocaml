@@ -1,0 +1,3 @@
+# Sync demos from ../sw-cor24-ocaml/tests/
+
+Run `./scripts/sync-demos.sh` to refresh examples/ from upstream. Review upstream .ml tests not currently in the MAPPING table in scripts/sync-demos.sh. For any that are good browser-demo candidates (small, self-contained, non-recursive-blow-up), add a mapping line, append a matching entry to src/demos.rs with a good title/description, document in docs/demos.md. Verify `cargo test --lib` still passes. Commit examples/, scripts/sync-demos.sh, src/demos.rs, docs/demos.md together.

@@ -1,0 +1,11 @@
+number = 1
+slug = "sync-demos"
+status = "in-progress"
+description = """
+# Sync demos from ../sw-cor24-ocaml/tests/
+
+Run `./scripts/sync-demos.sh` to ..."""
+role = "production"
+context_files = []
+created_at = "2026-04-15T16:30:13"
+commits = []

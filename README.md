@@ -31,7 +31,7 @@ Pick a demo from the dropdown and hit **Run** (or Cmd/Ctrl-Enter).
 
 ## Demos
 
-19 OCaml programs ship with the build (18 mirrored from
+23 OCaml programs ship with the build (22 mirrored from
 `../sw-cor24-ocaml/tests/` via `scripts/sync-demos.sh`, 1 hand-written):
 
 | Demo | Description |
@@ -43,16 +43,20 @@ Pick a demo from the dropdown and hit **Run** (or Cmd/Ctrl-Enter).
 | `pairs` | Tuple construction with `fst` / `snd` accessors. |
 | `lists` | List literals, cons, head/tail, is_empty. |
 | `list-module` | `List.length`, `List.rev`, qualified-name lookups. |
+| `higher-order-lists` | `List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas. |
 | `lists-pairs-demo` | Sum, length, map, swap, countdown -- lists + pairs in one program. |
 | `sequencing` | Semicolon-sequenced expressions evaluated left-to-right. |
 | `print` | `print_int` and `putc` writing through the UART. |
 | `led-blink` | Drive the COR24 LED via `led_on` / `led_off`. Browser stubs the LED. |
 | `led-toggle` | Read the COR24 switch and reflect it on the LED. |
 | `function-form-let` | Sugared `let f x y = body` form (curried function definitions). |
+| `function-keyword` | `function` keyword: shorthand for `fun x -> match x with ...`. |
+| `function-pattern-args` | Destructuring patterns directly in function arguments. |
 | `strings` | String literals, `^` concatenation, `print_endline`, `String.length`. |
 | `named-adts` | Sum types via `type T = C1 \| C2 \| ...` and `match` expressions. |
 | `options` | The built-in `option` type: `None` and `Some x`. |
 | `patterns` | Pattern matching across lists, tuples, options, and literals. |
+| `when-guards` | `match ... when <guard>` clauses for conditional pattern arms. |
 | `let-destructure` | Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends. |
 | `repl-session` | Multi-expression REPL session -- type more lines after the seed runs. |
 

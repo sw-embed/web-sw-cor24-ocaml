@@ -1,0 +1,1 @@
+Replaced single-byte-per-tick UART feed with an inner-batch loop (INNER_BATCH=50_000) that pushes source bytes whenever IO_UARTSTAT bit 0 (RX ready) is clear. print_int 42 now halts in 799,448 cor24 instructions vs 6,410,000 before -- 8x reduction. cargo test passes; trunk build clean.

@@ -1,0 +1,1 @@
+Scaffolded Cargo+Trunk skeleton (Cargo.toml, Trunk.toml port 9735, build.rs, index.html, placeholder Yew App, ui.css, favicon via favicon -T -t OC -r 39 -f 8945ee). Verified cargo check, trunk build, and trunk serve on :9735 (HTTP 200).

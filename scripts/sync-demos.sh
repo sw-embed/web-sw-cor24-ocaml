@@ -41,6 +41,10 @@ MAPPING=(
     "eval_options:options"
     "demo_patterns:patterns"
     "eval_let_destructure:let-destructure"
+    "eval_list_higher_order:higher-order-lists"
+    "eval_when_guards:when-guards"
+    "eval_function_keyword:function-keyword"
+    "eval_function_pattern_args:function-pattern-args"
     "repl_session:repl-session"
 )
 
