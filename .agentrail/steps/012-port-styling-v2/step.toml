@@ -1,0 +1,8 @@
+number = 12
+slug = "port-styling-v2"
+status = "pending"
+description = "Port the visual design from ../web-sw-cor24-basic/src/ui.css. Same body as th..."
+role = "legacy"
+context_files = []
+created_at = "2026-04-15T12:25:18"
+commits = []
