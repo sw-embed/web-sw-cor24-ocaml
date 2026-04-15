@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#
+# sync-demos.sh -- Refresh examples/ from the sibling CLI repo.
+#
+# The mapping table is the single source of truth for which CLI test
+# files surface as web demos and what they're renamed to. Add new
+# entries here as the CLI grows new demos worth showing.
+#
+# Usage: ./scripts/sync-demos.sh
+#   CLI_DIR=/custom/path ./scripts/sync-demos.sh
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+CLI_DIR="${CLI_DIR:-$REPO_DIR/../sw-cor24-ocaml}"
+
+if [ ! -d "$CLI_DIR/tests" ]; then
+    echo "error: $CLI_DIR/tests not found" >&2
+    exit 1
+fi
+
+EXAMPLES_DIR="$REPO_DIR/examples"
+mkdir -p "$EXAMPLES_DIR"
+
+# CLI test file (without .ml) -> web demo file (without .ml)
+MAPPING=(
+    "eval_fact:factorial"
+    "eval_pairs:pairs"
+    "eval_list_basics:lists"
+    "eval_list_module:list-module"
+    "demo_lists_pairs:lists-pairs-demo"
+    "demo_led_blink:led-blink"
+    "demo_led_toggle:led-toggle"
+    "eval_fun:functions"
+    "eval_multi_arg:multi-arg"
+    "eval_seq:sequencing"
+    "eval_print:print"
+    "repl_session:repl-session"
+)
+
+echo "Syncing demos from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
+for entry in "${MAPPING[@]}"; do
+    src="${entry%%:*}"
+    dst="${entry##*:}"
+    src_path="$CLI_DIR/tests/$src.ml"
+    dst_path="$EXAMPLES_DIR/$dst.ml"
+    if [ ! -f "$src_path" ]; then
+        echo "  warn: $src_path missing, skipping" >&2
+        continue
+    fi
+    cp "$src_path" "$dst_path"
+    printf "  %-22s <- tests/%s.ml\n" "$dst.ml" "$src"
+done
+
+# Hand-written hello.ml: default demo so first-time visitors see
+# output immediately. Not synced from the CLI.
+cat > "$EXAMPLES_DIR/hello.ml" <<'EOF'
+print_int 42
+EOF
+echo "  hello.ml               <- (hand-written, repo-local)"
