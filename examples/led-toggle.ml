@@ -1,1 +1,1 @@
-let rec loop = fun u ->   let s = switch () in   set_led s;   loop () in loop ()
+let s = switch () in set_led s; print_int (if s then 1 else 0)

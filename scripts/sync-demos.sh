@@ -53,7 +53,15 @@ MAPPING=(
 # input. Demos NOT in this list (pairs.ml, lists.ml, list-module.ml,
 # repl-session.ml) genuinely have one independent expression per
 # line and must be left as-is.
-COLLAPSE_NEWLINES=("led-blink" "led-toggle")
+COLLAPSE_NEWLINES=("led-blink")
+
+# Demos whose CLI source is unsuitable for the web demo (e.g. an
+# infinite recursion that overflows the OCaml interp's call stack
+# in the browser, where there's no terminal Ctrl-C). The web demo
+# ships a hand-edited examples/<name>.ml that this script must NOT
+# overwrite. Document the divergence here and in the demo's
+# docs/demos.md section.
+LOCAL_OVERRIDE=("led-toggle")
 
 echo "Syncing demos from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
 for entry in "${MAPPING[@]}"; do
@@ -63,6 +71,10 @@ for entry in "${MAPPING[@]}"; do
     dst_path="$EXAMPLES_DIR/$dst.ml"
     if [ ! -f "$src_path" ]; then
         echo "  warn: $src_path missing, skipping" >&2
+        continue
+    fi
+    if [[ " ${LOCAL_OVERRIDE[*]} " =~ " $dst " ]]; then
+        printf "  %-22s [skipped: hand-edited local override]\n" "$dst.ml"
         continue
     fi
     cp "$src_path" "$dst_path"

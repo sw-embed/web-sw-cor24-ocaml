@@ -293,3 +293,76 @@ footer a:hover {
   border: 1px solid var(--panel-border);
   border-radius: 3px;
 }
+
+/* ── Hardware panel (S2 + D2) ──
+ * Floats bottom-right of the viewport. Top-right is taken by the
+ * octocat corner; we don't compete for that space. */
+.hw-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(22, 27, 34, 0.92);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  z-index: 10;
+  min-width: 130px;
+  backdrop-filter: blur(4px);
+}
+.hw-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.hw-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.hw-row:last-child { margin-bottom: 0; }
+.hw-label {
+  color: var(--text-dim);
+  min-width: 24px;
+}
+/* D2 LED: solid disc, glows when on */
+.hw-led {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.hw-led-on {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.hw-led-off {
+  background: #0a0d12;
+  border: 1px solid var(--panel-border);
+}
+/* S2 switch: clickable pill */
+.hw-switch {
+  padding: 2px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  user-select: none;
+  letter-spacing: 0.04em;
+}
+.hw-switch-on {
+  background: var(--accent);
+  color: #ffffff;
+}
+.hw-switch-off {
+  background: #0a0d12;
+  color: var(--text-dim);
+  border: 1px solid var(--panel-border);
+}
+.hw-switch:hover { opacity: 0.85; }

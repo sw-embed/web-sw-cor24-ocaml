@@ -4,9 +4,11 @@ use yew::prelude::*;
 
 pub mod config;
 pub mod demos;
+pub mod hardware;
 pub mod runner;
 
 use demos::{DEMOS, default_demo_index};
+use hardware::HardwarePanel;
 use runner::Session;
 
 /// Per-tick instruction budget for the run loop. The `Session` runs at
@@ -32,6 +34,7 @@ pub enum Msg {
     KeyDown(KeyboardEvent),
     InputChanged(String),
     InputSubmit,
+    ToggleS2,
 }
 
 pub struct App {
@@ -50,6 +53,8 @@ pub struct App {
     awaiting_input: bool,
     output_ref: NodeRef,
     input_ref: NodeRef,
+    s2_on: bool,
+    led_on: bool,
 }
 
 impl App {
@@ -130,6 +135,8 @@ impl Component for App {
             awaiting_input: false,
             output_ref: NodeRef::default(),
             input_ref: NodeRef::default(),
+            s2_on: false,
+            led_on: false,
         }
     }
 
@@ -177,6 +184,15 @@ impl Component for App {
                 self.session = None;
                 self.load_demo(idx);
                 self.max_instrs = DEFAULT_MAX_INSTRS;
+                self.s2_on = false;
+                self.led_on = false;
+                true
+            }
+            Msg::ToggleS2 => {
+                self.s2_on = !self.s2_on;
+                if let Some(s) = self.session.as_mut() {
+                    s.set_switch(self.s2_on);
+                }
                 true
             }
             Msg::Clear => {
@@ -209,7 +225,12 @@ impl Component for App {
                         return true;
                     }
                 }
+                // Push the current S2 state into the cor24 switch
+                // register before each batch so any `switch ()` reads
+                // the demo issues this tick see fresh data.
+                session.set_switch(self.s2_on);
                 let result = session.tick();
+                self.led_on = session.led_on();
                 if session.is_awaiting_input() {
                     self.awaiting_input = true;
                     self.output = session.clean_output();
@@ -321,6 +342,7 @@ impl Component for App {
             .get(self.selected)
             .map(|d| d.description)
             .unwrap_or("");
+        let on_s2 = ctx.link().callback(|_| Msg::ToggleS2);
 
         html! {
             <>
@@ -404,6 +426,7 @@ impl Component for App {
                 </section>
                 </div>
             </main>
+            <HardwarePanel led_on={self.led_on} s2_on={self.s2_on} on_s2_toggle={on_s2} />
             <footer>
                 <span>{"MIT License"}</span>
                 <span class="footer-sep">{"\u{00b7}"}</span>

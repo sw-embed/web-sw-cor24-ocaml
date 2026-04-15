@@ -257,27 +257,26 @@ led_on (); print_int 1; led_off (); print_int 0; led_on (); print_int 1
 
 ## led-toggle
 
-Tail-recursive loop that reads the COR24 switch and reflects it on
-the LED. In the browser `switch ()` always returns `false` (`SYS 6`
-returns 0). The OCaml interpreter is *not* tail-call-optimized, so
-each `loop ()` call grows the interp's call stack until it
-exhausts -- the runtime catches that and prints `EVAL ERROR` instead
-of trapping the VM. On the real COR24 board with a working switch
-this would still loop; on the web emulator it terminates cleanly
-after a few thousand iterations.
+Read the COR24 switch (S2) once and drive the LED (D2) to match.
 
-(`scripts/sync-demos.sh` collapses this demo's newlines for the
-same REPL-line-parsing reason as `led-blink`.)
+The web demo diverges from the CLI's `demo_led_toggle.ml` source
+(which is a non-tail-call-optimised infinite `loop ()` recursion
+that overflows the interp's call stack in a few thousand
+iterations). Instead we ship a hand-edited, one-shot version so
+the demo plays well with the live hardware panel: toggle **S2**
+in the panel (bottom-right), hit **Run**, and see the output +
+the **D2** indicator light up. `scripts/sync-demos.sh` has an
+`LOCAL_OVERRIDE` allowlist that prevents future syncs from
+clobbering this file.
 
 ```ocaml
-let rec loop = fun u -> let s = switch () in set_led s; loop () in loop ()
+let s = switch () in set_led s; print_int (if s then 1 else 0)
 ```
 
 **Expected output:**
 
-```
-EVAL ERROR
-```
+- With S2 **off**: `0` (and D2 stays dark).
+- With S2 **on**: `1` (and D2 lights violet after Run).
 
 ---
 

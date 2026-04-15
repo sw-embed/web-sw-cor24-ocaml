@@ -248,6 +248,20 @@ impl Session {
         (self.emu.read_byte(IO_UARTSTAT) & UARTSTAT_RX_READY) != 0
     }
 
+    /// Push the COR24 S2 switch state into the emulator. Called from
+    /// the App on every tick before run_batch so the cor24 switch
+    /// register reflects the user's current toggle state. The
+    /// emulator's set_button_pressed is cheap (one byte write).
+    pub fn set_switch(&mut self, on: bool) {
+        self.emu.set_button_pressed(on);
+    }
+
+    /// Read the current COR24 D2 LED state. Call after each tick to
+    /// drive the hardware panel indicator.
+    pub fn led_on(&self) -> bool {
+        self.emu.is_led_on()
+    }
+
     pub fn is_done(&self) -> bool {
         self.done
     }
