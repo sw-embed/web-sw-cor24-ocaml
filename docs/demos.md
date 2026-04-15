@@ -281,6 +281,193 @@ EVAL ERROR
 
 ---
 
+## function-form-let
+
+The sugared `let f x y = body` shorthand for curried function
+definitions, equivalent to `let f = fun x -> fun y -> body`.
+Each expression demonstrates a different use of the form
+(application, recursion, higher-order composition, options).
+
+```ocaml
+let f x = x + 1 in f 5
+let square x = x * x in square 7
+let add x y = x + y in add 20 22
+let rec fact n = if n = 0 then 1 else n * fact (n - 1) in fact 5
+let rec fib n = if n < 2 then n else fib (n-1) + fib (n-2) in fib 7
+let compose f g x = f (g x) in compose (fun x -> x + 1) (fun x -> x * 2) 10
+let safe_div x y = if y = 0 then None else Some (x / y) in safe_div 42 6
+```
+
+**Expected output:**
+
+```
+6
+49
+42
+120
+13
+21
+Some 7
+```
+
+---
+
+## strings
+
+String literals, `^` concatenation, `print_endline` (which writes
+the string and a newline), and `String.length`.
+
+```ocaml
+"Hello"
+"OCaml" ^ " rocks"
+print_endline "Hello, World!"
+String.length "abcde"
+String.length ""
+"x" ^ "y" ^ "z"
+let greeting = "Hello, " ^ "World!" in print_endline greeting
+```
+
+**Expected output:** (string values display with quotes;
+`print_endline` writes raw bytes)
+
+```
+"Hello"
+"OCaml rocks"
+Hello, World!
+5
+0
+"xyz"
+Hello, World!
+```
+
+---
+
+## named-adts
+
+Define a sum type with `type T = C1 | C2 | ...`, then construct
+values and pattern-match over them. The last expression matches
+across two different ADTs to show that constructor names share one
+namespace.
+
+```ocaml
+type color = Red | Green | Blue
+Red
+Green
+Blue
+match Red with Red -> 1 | Green -> 2 | Blue -> 3
+match Green with Red -> 1 | Green -> 2 | Blue -> 3
+match Blue with Red -> 1 | Green -> 2 | Blue -> 3
+let name = function Red -> "red" | Green -> "green" | Blue -> "blue" in name Blue
+type shape = Circle | Square | Triangle
+match Circle with Red -> 1 | Green -> 2 | Blue -> 3 | Circle -> 10 | Square -> 11 | Triangle -> 12
+```
+
+**Expected output:**
+
+```
+Red
+Green
+Blue
+1
+2
+3
+"blue"
+10
+```
+
+---
+
+## options
+
+The built-in `option` type with `None` and `Some x` constructors.
+Demonstrates options carrying ints, lists, tuples, and other
+options (nested `Some (Some n)`).
+
+```ocaml
+None
+Some 42
+Some [1; 2; 3]
+Some (1, 2)
+let x = Some 7 in x
+Some (Some 3)
+```
+
+**Expected output:**
+
+```
+None
+Some 42
+Some [1; 2; 3]
+Some (1, 2)
+Some 7
+Some Some 3
+```
+
+---
+
+## patterns
+
+Pattern matching across lists (`[]` / `h :: t`), tuples,
+the `option` type, and literal integers (with `_` wildcard).
+
+```ocaml
+let rec sum = fun l -> match l with [] -> 0 | h :: t -> h + sum t in sum [1;2;3;4;5]
+let rec length = fun l -> match l with [] -> 0 | _ :: t -> 1 + length t in length [10;20;30]
+let rec map = fun f l -> match l with [] -> [] | h :: t -> f h :: map f t in map (fun x -> x * 2) [1;2;3]
+let rec filter = fun f l -> match l with [] -> [] | h :: t -> if f h then h :: filter f t else filter f t in filter (fun x -> x mod 2 = 0) [1;2;3;4;5;6]
+let safe_div = fun x y -> if y = 0 then None else Some (x / y) in safe_div 10 3
+let safe_div = fun x y -> if y = 0 then None else Some (x / y) in safe_div 10 0
+match Some 7 with None -> 0 | Some n -> n + 1
+let classify = fun n -> match n with 0 -> 100 | 1 -> 101 | _ -> 999 in classify 0
+let classify = fun n -> match n with 0 -> 100 | 1 -> 101 | _ -> 999 in classify 5
+let swap = fun p -> match p with (a, b) -> (b, a) in swap (1, 2)
+```
+
+**Expected output:**
+
+```
+15
+3
+[2; 4; 6]
+[2; 4; 6]
+Some 3
+None
+8
+100
+999
+(2, 1)
+```
+
+---
+
+## let-destructure
+
+Destructuring patterns on the LHS of `let`: tuples, list cons,
+list literals, and `option` constructors. Useful for binding
+multiple names at once when you know the shape of the value.
+
+```ocaml
+let (a, b) = (1, 2) in a + b
+let (x, y) = (10, 20) in let (p, q) = (3, 4) in x + y + p + q
+let h :: t = [1; 2; 3] in h
+let [a; b; c] = [10; 20; 30] in a + b + c
+let Some n = Some 99 in n + 1
+let (x, [a; b]) = (1, [2; 3]) in x + a + b
+```
+
+**Expected output:**
+
+```
+3
+37
+1
+60
+100
+6
+```
+
+---
+
 ## repl-session
 
 Marked `interactive: true` in the catalog. The seed source contains

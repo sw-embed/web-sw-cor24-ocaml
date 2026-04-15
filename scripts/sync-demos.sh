@@ -35,6 +35,12 @@ MAPPING=(
     "eval_multi_arg:multi-arg"
     "eval_seq:sequencing"
     "eval_print:print"
+    "eval_function_form_let:function-form-let"
+    "eval_strings:strings"
+    "eval_named_adts:named-adts"
+    "eval_options:options"
+    "demo_patterns:patterns"
+    "eval_let_destructure:let-destructure"
     "repl_session:repl-session"
 )
 

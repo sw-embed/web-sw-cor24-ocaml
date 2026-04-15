@@ -86,6 +86,42 @@ pub static DEMOS: &[Demo] = &[
         description: "Read the COR24 switch and reflect it on the LED.",
     },
     Demo {
+        name: "function-form-let",
+        source: include_str!("../examples/function-form-let.ml"),
+        interactive: false,
+        description: "Sugared `let f x y = body` form (curried function definitions).",
+    },
+    Demo {
+        name: "strings",
+        source: include_str!("../examples/strings.ml"),
+        interactive: false,
+        description: "String literals, `^` concatenation, `print_endline`, `String.length`.",
+    },
+    Demo {
+        name: "named-adts",
+        source: include_str!("../examples/named-adts.ml"),
+        interactive: false,
+        description: "Sum types via `type T = C1 | C2 | ...` and `match` expressions.",
+    },
+    Demo {
+        name: "options",
+        source: include_str!("../examples/options.ml"),
+        interactive: false,
+        description: "The built-in `option` type: `None` and `Some x`.",
+    },
+    Demo {
+        name: "patterns",
+        source: include_str!("../examples/patterns.ml"),
+        interactive: false,
+        description: "Pattern matching across lists, tuples, options, and literals.",
+    },
+    Demo {
+        name: "let-destructure",
+        source: include_str!("../examples/let-destructure.ml"),
+        interactive: false,
+        description: "Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends.",
+    },
+    Demo {
         name: "repl-session",
         source: include_str!("../examples/repl-session.ml"),
         interactive: true,
