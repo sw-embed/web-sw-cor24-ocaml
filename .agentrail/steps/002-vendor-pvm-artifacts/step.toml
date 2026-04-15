@@ -1,6 +1,6 @@
 number = 2
 slug = "vendor-pvm-artifacts"
-status = "in-progress"
+status = "completed"
 description = """
 # Vendor PVM + OCaml interpreter artifacts
 
@@ -8,4 +8,5 @@ Produce the binary artifacts the ..."""
 role = "production"
 context_files = []
 created_at = "2026-04-15T10:45:25"
-commits = []
+completed_at = "2026-04-15T10:58:29"
+commits = ["f5866b5cbf341f62c059ea5778560ca026105603"]
