@@ -60,6 +60,46 @@ pub struct TickResult {
     pub done: bool,
 }
 
+/// Remove REPL prompt segments from a raw UART transcript. Anywhere a
+/// line starts with `"> "` (the OCaml REPL's prompt), drop the prompt
+/// and the echoed source bytes that follow it up to and including the
+/// next newline. Result text on subsequent lines passes through.
+///
+/// Handles both shapes:
+/// - One-shot, no trailing newline:
+///   `"> print_int 4242"` -> `"42"` (echo runs to end of buffer for
+///   12 bytes then result begins; we anchor on the source we sent
+///   only when echo ends at a newline, so the no-newline case still
+///   conflates echo with result -- callers wanting clean separation
+///   should ensure their source ends with `\n`).
+/// - Multi-line REPL session: each `"> <line>\n"` is dropped.
+fn strip_prompt_echoes(raw: &str) -> String {
+    let mut out = String::with_capacity(raw.len());
+    let bytes = raw.as_bytes();
+    let mut i = 0;
+    let mut at_line_start = true;
+    while i < bytes.len() {
+        if at_line_start && i + 1 < bytes.len() && bytes[i] == b'>' && bytes[i + 1] == b' ' {
+            // Skip "> " then echoed source up to and including the next newline.
+            i += 2;
+            while i < bytes.len() {
+                let b = bytes[i];
+                i += 1;
+                if b == b'\n' {
+                    break;
+                }
+            }
+            at_line_start = true;
+            continue;
+        }
+        let b = bytes[i];
+        out.push(b as char);
+        at_line_start = b == b'\n';
+        i += 1;
+    }
+    out
+}
+
 impl Session {
     pub fn new(source: &str) -> Self {
         Self::new_with_mode(source, false)
@@ -100,6 +140,15 @@ impl Session {
         emu.resume();
 
         let mut rx_queue: VecDeque<u8> = source.bytes().collect();
+        // Ensure each source ends with a newline so the REPL's read
+        // loop terminates the echoed line cleanly. Without this, a
+        // one-shot like `print_int 42` (no trailing newline) emits
+        // `"> print_int 4242"` with no separator between echoed
+        // source and the computed result, and clean_output() can't
+        // tell them apart.
+        if !source.ends_with('\n') {
+            rx_queue.push_back(b'\n');
+        }
         if !interactive {
             rx_queue.push_back(0x04);
         }
@@ -221,21 +270,25 @@ impl Session {
         self.emu.get_uart_output().to_string()
     }
 
-    /// UART output with the pvm boot banner and OCaml REPL prompt
-    /// markers stripped, mirroring the awk/sed pipeline in
-    /// `../sw-cor24-ocaml/scripts/run-ocaml.sh`.
+    /// UART output with the pvm boot banner, REPL prompts, echoed
+    /// source, and trailing CRs stripped -- only the program's actual
+    /// output remains. The OCaml interpreter (`ocaml.pas`'s
+    /// `lex_init`) echoes every input character before evaluating;
+    /// the user already sees the source in the editor pane, so we
+    /// suppress it in the output panel here.
     pub fn clean_output(&self) -> String {
         let raw = self.output();
-        let mut out = String::with_capacity(raw.len());
-        for line in raw.lines() {
-            let t = line.trim();
+        let stripped = strip_prompt_echoes(&raw);
+        let mut out = String::with_capacity(stripped.len());
+        for line in stripped.lines() {
+            let t = line.trim_end_matches('\r').trim();
             if t.is_empty() || t == "PVM OK" || t == "HALT" {
                 continue;
             }
             if !out.is_empty() {
                 out.push('\n');
             }
-            out.push_str(line);
+            out.push_str(line.trim_end_matches('\r'));
         }
         out
     }
@@ -295,10 +348,36 @@ mod tests {
             "print_int 42: {} cor24 instructions to halt",
             s.instructions
         );
-        assert!(
-            s.clean_output().contains("42"),
-            "expected '42' in cleaned output, got: {:?}",
+        let cleaned = s.clean_output();
+        assert_eq!(
+            cleaned, "42",
+            "expected exactly '42' after stripping echo, got: {cleaned:?} (raw: {:?})",
             s.output()
         );
+    }
+
+    #[test]
+    fn strip_prompt_echoes_one_shot() {
+        // Mirrors the raw UART transcript an OCaml REPL produces for
+        // a single-line source ending in newline: prompt + echoed
+        // line + crlf + result.
+        let raw = "PVM OK\r\n> print_int 42\r\n42";
+        let cleaned = strip_prompt_echoes(raw);
+        // Both prompt-and-echo lines stripped; result remains.
+        assert!(
+            !cleaned.contains("print_int"),
+            "echo not stripped: {cleaned:?}"
+        );
+        assert!(cleaned.contains("42"), "result missing: {cleaned:?}");
+    }
+
+    #[test]
+    fn strip_prompt_echoes_multi_line() {
+        let raw = "PVM OK\r\n> 42\r\n42\r\n> let x = 1 + 1 in x\r\n2\r\n";
+        let cleaned = strip_prompt_echoes(raw);
+        assert!(!cleaned.contains("> 42"), "echo line not stripped");
+        assert!(!cleaned.contains("let x"), "second echo not stripped");
+        assert!(cleaned.contains("42"), "first result missing");
+        assert!(cleaned.contains("2"), "second result missing");
     }
 }
