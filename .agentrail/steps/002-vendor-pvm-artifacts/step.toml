@@ -1,6 +1,6 @@
 number = 2
 slug = "vendor-pvm-artifacts"
-status = "pending"
+status = "in-progress"
 description = """
 # Vendor PVM + OCaml interpreter artifacts
 
