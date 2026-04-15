@@ -1,0 +1,1 @@
+Re-vendored asm/pvm.s (unchanged) and assets/ocaml.p24m (30961 -> 39870 B; new strings/function-form-let/named-ADT features). cargo test all green; trunk build clean. print_int 42 ticked 805,476 cor24 instrs (was 803,882 -- trivial drift).
