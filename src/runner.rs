@@ -192,8 +192,8 @@ impl Session {
 
             let chunk = INNER_BATCH.min(budget - total);
             let result = self.emu.run_batch(chunk);
-            self.instructions += result.instructions_run as u64;
-            total += result.instructions_run as u64;
+            self.instructions += result.instructions_run;
+            total += result.instructions_run;
 
             match result.reason {
                 StopReason::Halted => {
@@ -364,7 +364,8 @@ mod tests {
         );
         let cleaned = s.clean_output();
         assert_eq!(
-            cleaned, "42",
+            cleaned,
+            "42",
             "expected exactly '42' after stripping echo, got: {cleaned:?} (raw: {:?})",
             s.output()
         );

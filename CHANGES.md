@@ -1,5 +1,28 @@
 # Changes
 
+## [Unreleased]
+
+Live-demo readiness work (`live-demo-readyup` saga, 2026-04-15):
+
+- Demo catalog grown from 19 to 23: added `higher-order-lists`,
+  `function-keyword`, `function-pattern-args`, and `when-guards` by
+  extending the `scripts/sync-demos.sh` mapping and
+  `src/demos.rs`/`docs/demos.md`. All new demos pass the
+  `every_non_interactive_demo_halts_cleanly` integration test.
+- `.github/workflows/pages.yml` added: push to `main` or manual
+  dispatch uploads `./pages` and deploys via `actions/deploy-pages@v4`,
+  matching the sibling `web-sw-cor24-basic` pattern. With
+  `pages/.nojekyll` already in place, this is the final wire needed
+  for the public live demo at
+  <https://sw-embed.github.io/web-sw-cor24-ocaml/>.
+- `README.md` front matter restructured to match the sibling style
+  (title -> blurb -> Live demo link -> inline screenshot ->
+  rest of the content). Added
+  `images/screenshot-demo.png` (a `lists-pairs-demo` run) with
+  `?ts=<ms>` cache-busting. Dropped the TODO Screenshot section.
+- Cleanup: `cargo fmt` + removed two unnecessary `as u64` casts in
+  `src/runner.rs`.
+
 ## v0.1.0 -- 2026-04-15
 
 Initial release. Browser live demo for the
