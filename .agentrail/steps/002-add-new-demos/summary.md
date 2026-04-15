@@ -1,0 +1,1 @@
+Added 6 new demos: function-form-let, strings, named-adts, options, patterns, let-destructure. Mapping in scripts/sync-demos.sh; entries in src/demos.rs; sections in docs/demos.md; row in README. cargo test (6+2) all green; trunk build clean; markdown-checker passes. led-toggle shifted from EVAL ERROR to TRAP 4 with new image -- addressed properly in next step.
