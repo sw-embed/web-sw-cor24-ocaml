@@ -17,6 +17,12 @@ pub struct Demo {
 // ordering is independent of which demo is the default.
 pub static DEMOS: &[Demo] = &[
     Demo {
+        name: "echo-loop",
+        source: include_str!("../examples/echo-loop.ml"),
+        interactive: true,
+        description: "Type any text and it's echoed back. Type `quit` to exit.",
+    },
+    Demo {
         name: "factorial",
         source: include_str!("../examples/factorial.ml"),
         interactive: false,
@@ -210,6 +216,10 @@ mod tests {
         assert!(
             !interactive.is_empty(),
             "at least one demo must be interactive"
+        );
+        assert!(
+            interactive.contains(&"echo-loop"),
+            "echo-loop must be interactive"
         );
         assert!(
             interactive.contains(&"repl-session"),

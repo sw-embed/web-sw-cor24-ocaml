@@ -47,6 +47,7 @@ MAPPING=(
     "eval_function_pattern_args:function-pattern-args"
     "repl_session:repl-session"
     "demo_adventure:text-adventure"
+    "demo_echo_loop:echo-loop"
 )
 
 # Demos whose source is one logical expression that spans multiple

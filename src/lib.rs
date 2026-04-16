@@ -538,6 +538,14 @@ impl Component for App {
                                     { ". Press ↑/↓ to recall previous inputs." }
                                 </p>
                             }
+                        } else if demo_name == "echo-loop" {
+                            html! {
+                                <p class="input-hint">
+                                    { "type any text to echo back, or " }
+                                    <code>{ "quit" }</code>
+                                    { " to exit. Press ↑/↓ to recall previous inputs." }
+                                </p>
+                            }
                         } else {
                             html! {
                                 <p class="input-hint">
@@ -671,7 +679,8 @@ fn user_guide_body() -> Html {
             <h3>{ "Interactive demos" }</h3>
             <ul>
                 <li>{ "The " }<code>{ "repl-session" }</code>
-                    { " and " }<code>{ "text-adventure" }</code>
+                    { ", " }<code>{ "echo-loop" }</code>
+                    { ", and " }<code>{ "text-adventure" }</code>
                     { " demos pause after the seed source finishes and wait for your input." }</li>
                 <li>{ "For " }<code>{ "repl-session" }</code>
                     { ", each input must be a single complete expression. " }
