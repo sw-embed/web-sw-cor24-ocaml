@@ -22,6 +22,12 @@ fn now_ms() -> f64 {
     js_sys::Date::now()
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum HelpTab {
+    UserGuide,
+    LanguageReference,
+}
+
 pub enum Msg {
     SelectDemo(usize),
     SourceChanged(String),
@@ -37,6 +43,9 @@ pub enum Msg {
     HistoryPrev,
     HistoryNext,
     ToggleS2,
+    OpenHelp,
+    CloseHelp,
+    SetHelpTab(HelpTab),
 }
 
 pub struct App {
@@ -62,6 +71,8 @@ pub struct App {
     input_ref: NodeRef,
     s2_on: bool,
     led_on: bool,
+    help_open: bool,
+    help_tab: HelpTab,
 }
 
 impl App {
@@ -150,6 +161,8 @@ impl Component for App {
             input_ref: NodeRef::default(),
             s2_on: false,
             led_on: false,
+            help_open: false,
+            help_tab: HelpTab::UserGuide,
         }
     }
 
@@ -338,11 +351,28 @@ impl Component for App {
                 if e.key() == "Enter" && (e.ctrl_key() || e.meta_key()) {
                     e.prevent_default();
                     ctx.link().send_message(Msg::Run);
-                } else if e.key() == "Escape" && self.running {
-                    e.prevent_default();
-                    ctx.link().send_message(Msg::Stop);
+                } else if e.key() == "Escape" {
+                    if self.help_open {
+                        e.prevent_default();
+                        ctx.link().send_message(Msg::CloseHelp);
+                    } else if self.running {
+                        e.prevent_default();
+                        ctx.link().send_message(Msg::Stop);
+                    }
                 }
                 false
+            }
+            Msg::OpenHelp => {
+                self.help_open = true;
+                true
+            }
+            Msg::CloseHelp => {
+                self.help_open = false;
+                true
+            }
+            Msg::SetHelpTab(tab) => {
+                self.help_tab = tab;
+                true
             }
         }
     }
@@ -435,6 +465,12 @@ impl Component for App {
                         { run_button }
                         <button class="secondary" onclick={on_reset} disabled={self.running}>{ "Reset" }</button>
                         <button class="secondary" onclick={on_clear}>{ "Clear" }</button>
+                        <button
+                            class="secondary icon-btn"
+                            onclick={ctx.link().callback(|_| Msg::OpenHelp)}
+                            title="Open help (User Guide / Language Reference)"
+                            aria-label="Open help"
+                        >{ "?" }</button>
                     </div>
                 </header>
                 <p class="demo-description">{ description }</p>
@@ -492,6 +528,7 @@ impl Component for App {
                 </div>
             </main>
             <HardwarePanel led_on={self.led_on} s2_on={self.s2_on} on_s2_toggle={on_s2} />
+            { self.view_help(ctx) }
             <footer>
                 <span>{"MIT License"}</span>
                 <span class="footer-sep">{"\u{00b7}"}</span>
@@ -517,5 +554,238 @@ impl Component for App {
             </footer>
             </>
         }
+    }
+}
+
+impl App {
+    fn view_help(&self, ctx: &Context<Self>) -> Html {
+        if !self.help_open {
+            return html! {};
+        }
+        let on_close = ctx.link().callback(|_| Msg::CloseHelp);
+        let on_stop_prop = Callback::from(|e: MouseEvent| e.stop_propagation());
+        let on_user = ctx
+            .link()
+            .callback(|_| Msg::SetHelpTab(HelpTab::UserGuide));
+        let on_lang = ctx
+            .link()
+            .callback(|_| Msg::SetHelpTab(HelpTab::LanguageReference));
+        let user_class = if self.help_tab == HelpTab::UserGuide {
+            "modal-tab active"
+        } else {
+            "modal-tab"
+        };
+        let lang_class = if self.help_tab == HelpTab::LanguageReference {
+            "modal-tab active"
+        } else {
+            "modal-tab"
+        };
+        let body = match self.help_tab {
+            HelpTab::UserGuide => user_guide_body(),
+            HelpTab::LanguageReference => language_reference_body(),
+        };
+        html! {
+            <div class="modal-overlay" onclick={on_close.clone()}>
+                <div class="modal" onclick={on_stop_prop} role="dialog" aria-modal="true">
+                    <header class="modal-header">
+                        <div class="modal-tabs">
+                            <button class={user_class} onclick={on_user}>{ "User Guide" }</button>
+                            <button class={lang_class} onclick={on_lang}>{ "Language Reference" }</button>
+                        </div>
+                        <button class="modal-close" onclick={on_close}
+                                aria-label="Close help">{ "×" }</button>
+                    </header>
+                    <div class="modal-body">{ body }</div>
+                </div>
+            </div>
+        }
+    }
+}
+
+fn user_guide_body() -> Html {
+    html! {
+        <>
+            <h3>{ "Running a demo" }</h3>
+            <ul>
+                <li>{ "Pick a program from the demo dropdown. Source loads into the left panel; hit " }
+                    <strong>{ "Run" }</strong>
+                    { " or " }<kbd>{ "Cmd" }</kbd>{ "/" }<kbd>{ "Ctrl" }</kbd>{ "+" }<kbd>{ "Enter" }</kbd>
+                    { " to execute." }</li>
+                <li><strong>{ "Esc" }</strong>{ " or the " }<strong>{ "Stop" }</strong>
+                    { " button halts a running session." }</li>
+                <li><strong>{ "Reset" }</strong>{ " reloads the demo's source. " }
+                    <strong>{ "Clear" }</strong>{ " wipes the output panel but keeps the edits." }</li>
+                <li>{ "Edit the source freely before hitting Run -- the dropdown source is a starting point." }</li>
+            </ul>
+
+            <h3>{ "Status bar and budget" }</h3>
+            <ul>
+                <li>{ "The status line shows instruction count and elapsed ms as the VM runs." }</li>
+                <li>{ "If a program exhausts its instruction budget, an " }
+                    <em>{ "Increase budget 4x" }</em>
+                    { " button appears -- click to continue." }</li>
+            </ul>
+
+            <h3>{ "REPL demo (interactive)" }</h3>
+            <ul>
+                <li>{ "The " }<code>{ "repl-session" }</code>
+                    { " demo pauses after the seed source finishes and waits for your input." }</li>
+                <li>{ "Each input must be a single complete expression. " }
+                    <code>{ "let x = 42" }</code>
+                    { " is a parse error on its own; use " }
+                    <code>{ "let x = 42 in x" }</code>{ "." }</li>
+                <li>{ "Press " }<kbd>{ "↑" }</kbd>{ " / " }<kbd>{ "↓" }</kbd>
+                    { " in the input row to recall previously submitted lines." }</li>
+                <li>{ "Press " }<kbd>{ "Enter" }</kbd>
+                    { " or click " }<strong>{ "Send" }</strong>{ " to submit." }</li>
+            </ul>
+
+            <h3>{ "Hardware panel" }</h3>
+            <ul>
+                <li>{ "Bottom-right panel: toggle the " }<strong>{ "S2" }</strong>
+                    { " switch to drive " }<code>{ "switch ()" }</code>{ "; the " }
+                    <strong>{ "D2" }</strong>{ " indicator reflects " }
+                    <code>{ "led_on" }</code>{ " / " }<code>{ "led_off" }</code>{ "." }</li>
+                <li>{ "Try the " }<code>{ "led-toggle" }</code>
+                    { " demo with S2 on vs off." }</li>
+            </ul>
+
+            <h3>{ "Footer" }</h3>
+            <ul>
+                <li>{ "Build host, short SHA, and UTC build timestamp are shown in the footer to help diagnose stale-cache deploys." }</li>
+            </ul>
+        </>
+    }
+}
+
+fn language_reference_body() -> Html {
+    html! {
+        <>
+            <p>{ "This is an " }<em>{ "integer-subset OCaml" }</em>
+                { " interpreter (sw-cor24-ocaml): no floats, no references, \
+                     no exceptions, a small built-in standard library. The REPL \
+                     reads one complete expression per line and echoes its value." }</p>
+
+            <h3>{ "Literals" }</h3>
+            <ul>
+                <li>{ "Integers: " }<code>{ "0 42 -7 1000000" }</code></li>
+                <li>{ "Strings: " }<code>{ "\"hello\"" }</code>{ " (concatenate with " }
+                    <code>{ "^" }</code>{ ")" }</li>
+                <li>{ "Unit: " }<code>{ "()" }</code></li>
+                <li>{ "Pairs / tuples: " }<code>{ "(1, 2)" }</code>{ ", " }
+                    <code>{ "(a, (b, c))" }</code></li>
+                <li>{ "Lists: " }<code>{ "[]" }</code>{ ", " }
+                    <code>{ "[1; 2; 3]" }</code>{ ", " }
+                    <code>{ "1 :: nil" }</code>{ ", " }
+                    <code>{ "h :: t" }</code></li>
+                <li>{ "Options: " }<code>{ "None" }</code>{ ", " }
+                    <code>{ "Some 42" }</code></li>
+                <li>{ "Booleans: " }<code>{ "true" }</code>{ ", " }
+                    <code>{ "false" }</code></li>
+            </ul>
+
+            <h3>{ "Operators" }</h3>
+            <ul>
+                <li>{ "Arithmetic: " }<code>{ "+ - * / mod" }</code>
+                    { " (unary minus too)" }</li>
+                <li>{ "String: " }<code>{ "^" }</code>{ " (concatenation)" }</li>
+                <li>{ "Comparison: " }<code>{ "= < > <= >= <>" }</code></li>
+                <li>{ "Logical: " }<code>{ "&& ||" }</code>
+                    { " (short-circuit); " }<code>{ "not" }</code></li>
+                <li>{ "Cons: " }<code>{ "::" }</code>{ " (right-associative)" }</li>
+                <li>{ "Sequencing: " }<code>{ "e1 ; e2" }</code>
+                    { " (must fit on one REPL line)" }</li>
+            </ul>
+
+            <h3>{ "Bindings and functions" }</h3>
+            <ul>
+                <li><code>{ "let x = expr in body" }</code>
+                    { " -- bare top-level " }<code>{ "let x = 42" }</code>
+                    { " is " }<em>{ "not" }</em>{ " accepted; use " }
+                    <code>{ "let x = 42 in x" }</code>{ "." }</li>
+                <li><code>{ "let rec f = fun n -> ..." }</code>
+                    { " / " }<code>{ "let rec f n = ..." }</code>
+                    { " for recursion." }</li>
+                <li>{ "Curried sugar: " }<code>{ "let add x y = x + y in add 3 4" }</code></li>
+                <li>{ "Lambdas: " }<code>{ "fun x -> x + 1" }</code>{ ", " }
+                    <code>{ "fun x y -> x + y" }</code></li>
+                <li><code>{ "function p1 -> e1 | p2 -> e2" }</code>
+                    { " -- shorthand for " }
+                    <code>{ "fun x -> match x with ..." }</code></li>
+                <li>{ "Destructuring args: " }<code>{ "let swap (x, y) = (y, x)" }</code></li>
+            </ul>
+
+            <h3>{ "Control flow" }</h3>
+            <ul>
+                <li><code>{ "if cond then e1 else e2" }</code>
+                    { " (else required)" }</li>
+                <li><code>{ "match e with p1 -> e1 | p2 -> e2" }</code></li>
+                <li>{ "Guards: " }<code>{ "| n when n < 0 -> ..." }</code></li>
+                <li>{ "Patterns: literals, " }<code>{ "_" }</code>
+                    { " wildcard, tuples " }<code>{ "(a, b)" }</code>
+                    { ", lists " }<code>{ "[]" }</code>{ " / " }<code>{ "h :: t" }</code>
+                    { " / " }<code>{ "[a; b]" }</code>{ ", " }
+                    <code>{ "None" }</code>{ " / " }<code>{ "Some x" }</code>
+                    { ", ADT constructors." }</li>
+            </ul>
+
+            <h3>{ "Types" }</h3>
+            <ul>
+                <li><code>{ "type color = Red | Green | Blue" }</code>
+                    { " (nullary constructors only)" }</li>
+                <li>{ "Built-ins: " }<code>{ "option" }</code>
+                    { " (" }<code>{ "None" }</code>{ " | " }<code>{ "Some x" }</code>{ ")" }</li>
+            </ul>
+
+            <h3>{ "Module-qualified functions" }</h3>
+            <ul>
+                <li><code>{ "List.length" }</code>{ ", " }
+                    <code>{ "List.rev" }</code>{ ", " }
+                    <code>{ "List.hd" }</code>{ ", " }
+                    <code>{ "List.tl" }</code>{ ", " }
+                    <code>{ "List.is_empty" }</code></li>
+                <li><code>{ "List.map" }</code>{ ", " }
+                    <code>{ "List.filter" }</code>{ ", " }
+                    <code>{ "List.fold_left" }</code>{ ", " }
+                    <code>{ "List.iter" }</code></li>
+                <li><code>{ "String.length" }</code></li>
+            </ul>
+
+            <h3>{ "I/O and hardware" }</h3>
+            <ul>
+                <li><code>{ "print_int : int -> unit" }</code>
+                    { " -- writes decimal via UART (no newline)" }</li>
+                <li><code>{ "print_endline : string -> unit" }</code>
+                    { " -- writes string + newline" }</li>
+                <li><code>{ "putc : int -> unit" }</code>
+                    { " -- writes one byte to UART" }</li>
+                <li><code>{ "led_on ()" }</code>{ ", " }
+                    <code>{ "led_off ()" }</code>{ ", " }
+                    <code>{ "set_led : bool -> unit" }</code></li>
+                <li><code>{ "switch : unit -> bool" }</code>
+                    { " -- reads the S2 panel switch" }</li>
+            </ul>
+
+            <h3>{ "Comments" }</h3>
+            <ul>
+                <li><code>{ "(* this is a comment *)" }</code>
+                    { " -- block comments, and they " }<em>{ "nest" }</em>{ "." }</li>
+                <li>{ "No single-line comment form. " }<code>{ "#" }</code>
+                    { " is not a token at all; real OCaml's toplevel directives \
+                       (" }<code>{ "#use" }</code>{ ", " }<code>{ "#quit" }</code>
+                    { ") are not implemented and will produce PARSE ERROR." }</li>
+            </ul>
+
+            <h3>{ "REPL quirks" }</h3>
+            <ul>
+                <li>{ "Each line is parsed independently -- a trailing " }
+                    <code>{ ";" }</code>
+                    { " on a continuation line is a parse error." }</li>
+                <li>{ "Every line's value is echoed. Use unit-returning \
+                     expressions (" }<code>{ "print_int" }</code>
+                    { ", " }<code>{ "print_endline" }</code>
+                    { ") if you want raw output and no echo formatting." }</li>
+            </ul>
+        </>
     }
 }
