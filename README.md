@@ -46,29 +46,29 @@ Pick a demo from the dropdown and hit **Run** (or Cmd/Ctrl-Enter).
 
 | Demo | Description |
 | --- | --- |
-| `hello` | Smallest possible program: print the integer 42. |
 | `factorial` | Recursive factorial via `let rec`; computes 5!. |
-| `functions` | First-class functions and `let` bindings. |
-| `multi-arg` | Multi-argument curried function via `fun x y -> ...`. |
-| `pairs` | Tuple construction with `fst` / `snd` accessors. |
-| `lists` | List literals, cons, head/tail, is_empty. |
-| `list-module` | `List.length`, `List.rev`, qualified-name lookups. |
-| `higher-order-lists` | `List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas. |
-| `lists-pairs-demo` | Sum, length, map, swap, countdown -- lists + pairs in one program. |
-| `sequencing` | Semicolon-sequenced expressions evaluated left-to-right. |
-| `print` | `print_int` and `putc` writing through the UART. |
-| `led-blink` | Drive the COR24 LED via `led_on` / `led_off`. Browser stubs the LED. |
-| `led-toggle` | Read the COR24 switch and reflect it on the LED. |
 | `function-form-let` | Sugared `let f x y = body` form (curried function definitions). |
 | `function-keyword` | `function` keyword: shorthand for `fun x -> match x with ...`. |
 | `function-pattern-args` | Destructuring patterns directly in function arguments. |
-| `strings` | String literals, `^` concatenation, `print_endline`, `String.length`. |
+| `functions` | First-class functions and `let` bindings. |
+| `hello` | Smallest possible program: print the integer 42. |
+| `higher-order-lists` | `List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas. |
+| `led-blink` | Drive the COR24 LED via `led_on` / `led_off`. Browser stubs the LED. |
+| `led-toggle` | Read the COR24 switch and reflect it on the LED. |
+| `let-destructure` | Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends. |
+| `list-module` | `List.length`, `List.rev`, qualified-name lookups. |
+| `lists` | List literals, cons, head/tail, is_empty. |
+| `lists-pairs-demo` | Sum, length, map, swap, countdown -- lists + pairs in one program. |
+| `multi-arg` | Multi-argument curried function via `fun x y -> ...`. |
 | `named-adts` | Sum types via `type T = C1 \| C2 \| ...` and `match` expressions. |
 | `options` | The built-in `option` type: `None` and `Some x`. |
+| `pairs` | Tuple construction with `fst` / `snd` accessors. |
 | `patterns` | Pattern matching across lists, tuples, options, and literals. |
-| `when-guards` | `match ... when <guard>` clauses for conditional pattern arms. |
-| `let-destructure` | Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends. |
+| `print` | `print_int` and `putc` writing through the UART. |
 | `repl-session` | Multi-expression REPL session -- type more lines after the seed runs. |
+| `sequencing` | Semicolon-sequenced expressions evaluated left-to-right. |
+| `strings` | String literals, `^` concatenation, `print_endline`, `String.length`. |
+| `when-guards` | `match ... when <guard>` clauses for conditional pattern arms. |
 
 See [`docs/demos.md`](docs/demos.md) for annotated source and expected
 output for each.

@@ -12,84 +12,15 @@ pub struct Demo {
     pub description: &'static str,
 }
 
+// Kept in alphabetical order by `name` so the UI dropdown is
+// alphabetised. `default_demo_index` finds `hello` by name, so this
+// ordering is independent of which demo is the default.
 pub static DEMOS: &[Demo] = &[
-    Demo {
-        name: "hello",
-        source: include_str!("../examples/hello.ml"),
-        interactive: false,
-        description: "Smallest possible program: print the integer 42.",
-    },
     Demo {
         name: "factorial",
         source: include_str!("../examples/factorial.ml"),
         interactive: false,
         description: "Recursive factorial via `let rec`; computes 5!.",
-    },
-    Demo {
-        name: "functions",
-        source: include_str!("../examples/functions.ml"),
-        interactive: false,
-        description: "First-class functions and `let` bindings.",
-    },
-    Demo {
-        name: "multi-arg",
-        source: include_str!("../examples/multi-arg.ml"),
-        interactive: false,
-        description: "Multi-argument curried function via `fun x y -> ...`.",
-    },
-    Demo {
-        name: "pairs",
-        source: include_str!("../examples/pairs.ml"),
-        interactive: false,
-        description: "Tuple construction with `fst` / `snd` accessors.",
-    },
-    Demo {
-        name: "lists",
-        source: include_str!("../examples/lists.ml"),
-        interactive: false,
-        description: "List literals, cons, head/tail, is_empty.",
-    },
-    Demo {
-        name: "list-module",
-        source: include_str!("../examples/list-module.ml"),
-        interactive: false,
-        description: "`List.length`, `List.rev`, qualified-name lookups.",
-    },
-    Demo {
-        name: "higher-order-lists",
-        source: include_str!("../examples/higher-order-lists.ml"),
-        interactive: false,
-        description: "`List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas.",
-    },
-    Demo {
-        name: "lists-pairs-demo",
-        source: include_str!("../examples/lists-pairs-demo.ml"),
-        interactive: false,
-        description: "Sum, length, map, swap, countdown — lists + pairs in one program.",
-    },
-    Demo {
-        name: "sequencing",
-        source: include_str!("../examples/sequencing.ml"),
-        interactive: false,
-        description: "Semicolon-sequenced expressions evaluated left-to-right.",
-    },
-    Demo {
-        name: "print",
-        source: include_str!("../examples/print.ml"),
-        interactive: false,
-        description: "`print_int` and `putc` writing through the UART.",
-    },
-    Demo {
-        name: "led-blink",
-        source: include_str!("../examples/led-blink.ml"),
-        interactive: false,
-        description: "Drive the COR24 LED via `led_on` / `led_off`. Browser stubs the LED.",
-    },
-    Demo {
-        name: "led-toggle",
-        source: include_str!("../examples/led-toggle.ml"),
-        interactive: false,
-        description: "Read the COR24 switch and reflect it on the LED.",
     },
     Demo {
         name: "function-form-let",
@@ -110,10 +41,64 @@ pub static DEMOS: &[Demo] = &[
         description: "Destructuring patterns directly in function arguments: `let swap (x, y) = ...`.",
     },
     Demo {
-        name: "strings",
-        source: include_str!("../examples/strings.ml"),
+        name: "functions",
+        source: include_str!("../examples/functions.ml"),
         interactive: false,
-        description: "String literals, `^` concatenation, `print_endline`, `String.length`.",
+        description: "First-class functions and `let` bindings.",
+    },
+    Demo {
+        name: "hello",
+        source: include_str!("../examples/hello.ml"),
+        interactive: false,
+        description: "Smallest possible program: print the integer 42.",
+    },
+    Demo {
+        name: "higher-order-lists",
+        source: include_str!("../examples/higher-order-lists.ml"),
+        interactive: false,
+        description: "`List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas.",
+    },
+    Demo {
+        name: "led-blink",
+        source: include_str!("../examples/led-blink.ml"),
+        interactive: false,
+        description: "Drive the COR24 LED via `led_on` / `led_off`. Browser stubs the LED.",
+    },
+    Demo {
+        name: "led-toggle",
+        source: include_str!("../examples/led-toggle.ml"),
+        interactive: false,
+        description: "Read the COR24 switch and reflect it on the LED.",
+    },
+    Demo {
+        name: "let-destructure",
+        source: include_str!("../examples/let-destructure.ml"),
+        interactive: false,
+        description: "Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends.",
+    },
+    Demo {
+        name: "list-module",
+        source: include_str!("../examples/list-module.ml"),
+        interactive: false,
+        description: "`List.length`, `List.rev`, qualified-name lookups.",
+    },
+    Demo {
+        name: "lists",
+        source: include_str!("../examples/lists.ml"),
+        interactive: false,
+        description: "List literals, cons, head/tail, is_empty.",
+    },
+    Demo {
+        name: "lists-pairs-demo",
+        source: include_str!("../examples/lists-pairs-demo.ml"),
+        interactive: false,
+        description: "Sum, length, map, swap, countdown — lists + pairs in one program.",
+    },
+    Demo {
+        name: "multi-arg",
+        source: include_str!("../examples/multi-arg.ml"),
+        interactive: false,
+        description: "Multi-argument curried function via `fun x y -> ...`.",
     },
     Demo {
         name: "named-adts",
@@ -128,22 +113,22 @@ pub static DEMOS: &[Demo] = &[
         description: "The built-in `option` type: `None` and `Some x`.",
     },
     Demo {
+        name: "pairs",
+        source: include_str!("../examples/pairs.ml"),
+        interactive: false,
+        description: "Tuple construction with `fst` / `snd` accessors.",
+    },
+    Demo {
         name: "patterns",
         source: include_str!("../examples/patterns.ml"),
         interactive: false,
         description: "Pattern matching across lists, tuples, options, and literals.",
     },
     Demo {
-        name: "when-guards",
-        source: include_str!("../examples/when-guards.ml"),
+        name: "print",
+        source: include_str!("../examples/print.ml"),
         interactive: false,
-        description: "`match ... when <guard>` clauses for conditional pattern arms (abs, sign).",
-    },
-    Demo {
-        name: "let-destructure",
-        source: include_str!("../examples/let-destructure.ml"),
-        interactive: false,
-        description: "Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends.",
+        description: "`print_int` and `putc` writing through the UART.",
     },
     Demo {
         name: "repl-session",
@@ -152,6 +137,24 @@ pub static DEMOS: &[Demo] = &[
         description: "Multi-expression REPL session -- type more lines after the seed runs. \
                       Each input must be a complete expression: `let x = 42 in x`, not bare \
                       `let x = 42`.",
+    },
+    Demo {
+        name: "sequencing",
+        source: include_str!("../examples/sequencing.ml"),
+        interactive: false,
+        description: "Semicolon-sequenced expressions evaluated left-to-right.",
+    },
+    Demo {
+        name: "strings",
+        source: include_str!("../examples/strings.ml"),
+        interactive: false,
+        description: "String literals, `^` concatenation, `print_endline`, `String.length`.",
+    },
+    Demo {
+        name: "when-guards",
+        source: include_str!("../examples/when-guards.ml"),
+        interactive: false,
+        description: "`match ... when <guard>` clauses for conditional pattern arms (abs, sign).",
     },
 ];
 
@@ -175,6 +178,17 @@ mod tests {
         let len = names.len();
         names.dedup();
         assert_eq!(names.len(), len, "duplicate demo names");
+    }
+
+    #[test]
+    fn demos_are_alphabetised() {
+        let names: Vec<_> = DEMOS.iter().map(|d| d.name).collect();
+        let mut sorted = names.clone();
+        sorted.sort();
+        assert_eq!(
+            names, sorted,
+            "DEMOS must stay alphabetised so the UI dropdown is alphabetised"
+        );
     }
 
     #[test]
