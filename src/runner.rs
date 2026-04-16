@@ -321,11 +321,20 @@ impl Session {
     }
 
     /// True when the interpreter is waiting on user input (interactive
-    /// mode only). For now this is a conservative approximation:
-    /// "interactive, no queued bytes, and we already finished seeding
-    /// the source" — same heuristic snobol4 uses.
+    /// mode only). This is a conservative approximation: "interactive,
+    /// no queued bytes, and we already finished seeding the source."
+    ///
+    /// Note: this can return true before the interp has finished
+    /// evaluating a line we just fed it (rx_queue empties as soon as
+    /// all bytes are pushed to UART, which may precede the interp
+    /// actually emitting its result). The App layer compensates by
+    /// tracking output changes — see `output_len_at_feed` in lib.rs.
     pub fn is_awaiting_input(&self) -> bool {
         self.interactive && !self.seeding_source && self.rx_queue.is_empty()
+    }
+
+    pub fn raw_output_len(&self) -> usize {
+        self.emu.get_uart_output().len()
     }
 }
 

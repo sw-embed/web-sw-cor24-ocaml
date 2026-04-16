@@ -67,6 +67,7 @@ pub struct App {
     // walking the history, and is `None` when editing a fresh line.
     input_history: Vec<String>,
     history_cursor: Option<usize>,
+    output_len_at_feed: Option<usize>,
     output_ref: NodeRef,
     input_ref: NodeRef,
     s2_on: bool,
@@ -157,6 +158,7 @@ impl Component for App {
             awaiting_input: false,
             input_history: Vec::new(),
             history_cursor: None,
+            output_len_at_feed: None,
             output_ref: NodeRef::default(),
             input_ref: NodeRef::default(),
             s2_on: false,
@@ -258,6 +260,28 @@ impl Component for App {
                 let result = session.tick();
                 self.led_on = session.led_on();
                 if session.is_awaiting_input() {
+                    // is_awaiting_input fires as soon as our rx_queue
+                    // empties, which can happen BEFORE the interpreter
+                    // has finished evaluating the line we fed it. If
+                    // output hasn't grown since the last feed_input,
+                    // the interp is still mid-evaluation — keep ticking
+                    // instead of stopping and forcing the user to hit
+                    // Enter a second time.
+                    let still_processing = self
+                        .output_len_at_feed
+                        .is_some_and(|len| session.clean_output().len() <= len);
+                    if still_processing {
+                        self.output = session.clean_output();
+                        self.elapsed_ms = now_ms() - self.started_at;
+                        self.status = format!(
+                            "running... {} instrs, {:.0} ms",
+                            session.instructions(),
+                            self.elapsed_ms
+                        );
+                        self.schedule_tick(ctx);
+                        return true;
+                    }
+                    self.output_len_at_feed = None;
                     self.awaiting_input = true;
                     self.output = session.clean_output();
                     self.elapsed_ms = now_ms() - self.started_at;
@@ -311,6 +335,7 @@ impl Component for App {
                 }
                 self.history_cursor = None;
                 if let Some(session) = self.session.as_mut() {
+                    self.output_len_at_feed = Some(session.clean_output().len());
                     session.feed_input(&line);
                 }
                 self.awaiting_input = false;
