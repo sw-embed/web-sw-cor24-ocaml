@@ -34,6 +34,8 @@ pub enum Msg {
     KeyDown(KeyboardEvent),
     InputChanged(String),
     InputSubmit,
+    HistoryPrev,
+    HistoryNext,
     ToggleS2,
 }
 
@@ -51,6 +53,11 @@ pub struct App {
     budget_exhausted: bool,
     input_line: String,
     awaiting_input: bool,
+    // Submitted REPL inputs in chronological order; `history_cursor`
+    // indexes from the end (0 = most recent) while the user is
+    // walking the history, and is `None` when editing a fresh line.
+    input_history: Vec<String>,
+    history_cursor: Option<usize>,
     output_ref: NodeRef,
     input_ref: NodeRef,
     s2_on: bool,
@@ -71,6 +78,8 @@ impl App {
             self.elapsed_ms = 0.0;
             self.input_line.clear();
             self.awaiting_input = false;
+            self.input_history.clear();
+            self.history_cursor = None;
         }
     }
 
@@ -86,6 +95,8 @@ impl App {
         });
         self.input_line.clear();
         self.awaiting_input = false;
+        self.input_history.clear();
+        self.history_cursor = None;
         self.running = true;
         self.error = false;
         self.budget_exhausted = false;
@@ -133,6 +144,8 @@ impl Component for App {
             budget_exhausted: false,
             input_line: String::new(),
             awaiting_input: false,
+            input_history: Vec::new(),
+            history_cursor: None,
             output_ref: NodeRef::default(),
             input_ref: NodeRef::default(),
             s2_on: false,
@@ -269,6 +282,8 @@ impl Component for App {
             }
             Msg::InputChanged(v) => {
                 self.input_line = v;
+                // User is editing a fresh line; leave any history walk.
+                self.history_cursor = None;
                 false
             }
             Msg::InputSubmit => {
@@ -276,12 +291,47 @@ impl Component for App {
                     return false;
                 }
                 let line = std::mem::take(&mut self.input_line);
+                // Record non-empty submits; skip consecutive duplicates so
+                // hitting Enter twice doesn't bloat the history.
+                if !line.is_empty() && self.input_history.last() != Some(&line) {
+                    self.input_history.push(line.clone());
+                }
+                self.history_cursor = None;
                 if let Some(session) = self.session.as_mut() {
                     session.feed_input(&line);
                 }
                 self.awaiting_input = false;
                 self.status = "running...".into();
                 self.schedule_tick(ctx);
+                true
+            }
+            Msg::HistoryPrev => {
+                if self.input_history.is_empty() {
+                    return false;
+                }
+                let next = match self.history_cursor {
+                    None => 0,
+                    Some(i) if i + 1 < self.input_history.len() => i + 1,
+                    Some(i) => i,
+                };
+                self.history_cursor = Some(next);
+                let idx = self.input_history.len() - 1 - next;
+                self.input_line = self.input_history[idx].clone();
+                true
+            }
+            Msg::HistoryNext => {
+                let Some(cursor) = self.history_cursor else {
+                    return false;
+                };
+                if cursor == 0 {
+                    self.history_cursor = None;
+                    self.input_line.clear();
+                } else {
+                    let next = cursor - 1;
+                    self.history_cursor = Some(next);
+                    let idx = self.input_history.len() - 1 - next;
+                    self.input_line = self.input_history[idx].clone();
+                }
                 true
             }
             Msg::KeyDown(e) => {
@@ -318,13 +368,20 @@ impl Component for App {
             Msg::InputChanged(target.value())
         });
         let on_input_submit = ctx.link().callback(|_| Msg::InputSubmit);
-        let on_input_keydown = ctx.link().callback(|e: KeyboardEvent| {
-            if e.key() == "Enter" {
+        let on_input_keydown = ctx.link().callback(|e: KeyboardEvent| match e.key().as_str() {
+            "Enter" => {
                 e.prevent_default();
                 Msg::InputSubmit
-            } else {
-                Msg::KeyDown(e)
             }
+            "ArrowUp" => {
+                e.prevent_default();
+                Msg::HistoryPrev
+            }
+            "ArrowDown" => {
+                e.prevent_default();
+                Msg::HistoryNext
+            }
+            _ => Msg::KeyDown(e),
         });
 
         let status_class = if self.error {
@@ -426,7 +483,7 @@ impl Component for App {
                                     { "tip: each input must be a complete expression. \
                                        `let` forms require an `in` clause, e.g. " }
                                     <code>{ "let x = 42 in x" }</code>
-                                    { "." }
+                                    { ". Press ↑/↓ to recall previous inputs." }
                                 </p>
                             </>
                         }
