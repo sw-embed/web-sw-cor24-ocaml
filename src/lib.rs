@@ -651,14 +651,22 @@ fn user_guide_body() -> Html {
                     { " button appears -- click to continue." }</li>
             </ul>
 
-            <h3>{ "REPL demo (interactive)" }</h3>
+            <h3>{ "Interactive demos" }</h3>
             <ul>
                 <li>{ "The " }<code>{ "repl-session" }</code>
-                    { " demo pauses after the seed source finishes and waits for your input." }</li>
-                <li>{ "Each input must be a single complete expression. " }
+                    { " and " }<code>{ "text-adventure" }</code>
+                    { " demos pause after the seed source finishes and wait for your input." }</li>
+                <li>{ "For " }<code>{ "repl-session" }</code>
+                    { ", each input must be a single complete expression. " }
                     <code>{ "let x = 42" }</code>
                     { " is a parse error on its own; use " }
                     <code>{ "let x = 42 in x" }</code>{ "." }</li>
+                <li>{ "For " }<code>{ "text-adventure" }</code>
+                    { ", type commands like " }<code>{ "look" }</code>{ ", " }
+                    <code>{ "inventory" }</code>{ ", " }<code>{ "take" }</code>{ ", " }
+                    <code>{ "n" }</code>{ "/" }<code>{ "s" }</code>{ "/" }
+                    <code>{ "e" }</code>{ "/" }<code>{ "w" }</code>{ ", or " }
+                    <code>{ "quit" }</code>{ "." }</li>
                 <li>{ "Press " }<kbd>{ "↑" }</kbd>{ " / " }<kbd>{ "↓" }</kbd>
                     { " in the input row to recall previously submitted lines." }</li>
                 <li>{ "Press " }<kbd>{ "Enter" }</kbd>
@@ -784,6 +792,8 @@ fn language_reference_body() -> Html {
                     { " -- writes string + newline" }</li>
                 <li><code>{ "putc : int -> unit" }</code>
                     { " -- writes one byte to UART" }</li>
+                <li><code>{ "read_line : unit -> string" }</code>
+                    { " -- reads a line of text input from the user (interactive demos)" }</li>
                 <li><code>{ "led_on ()" }</code>{ ", " }
                     <code>{ "led_off ()" }</code>{ ", " }
                     <code>{ "set_led : bool -> unit" }</code></li>

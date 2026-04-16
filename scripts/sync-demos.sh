@@ -46,6 +46,7 @@ MAPPING=(
     "eval_function_keyword:function-keyword"
     "eval_function_pattern_args:function-pattern-args"
     "repl_session:repl-session"
+    "demo_adventure:text-adventure"
 )
 
 # Demos whose source is one logical expression that spans multiple
@@ -57,7 +58,7 @@ MAPPING=(
 # input. Demos NOT in this list (pairs.ml, lists.ml, list-module.ml,
 # repl-session.ml) genuinely have one independent expression per
 # line and must be left as-is.
-COLLAPSE_NEWLINES=("led-blink")
+COLLAPSE_NEWLINES=("led-blink" "text-adventure")
 
 # Demos whose CLI source is unsuitable for the web demo (e.g. an
 # infinite recursion that overflows the OCaml interp's call stack

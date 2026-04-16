@@ -423,6 +423,53 @@ Hello, World!
 
 ---
 
+## text-adventure
+
+Marked `interactive: true`. A tiny text adventure demonstrating
+variant types (rooms, items), pattern matching, string equality,
+and `read_line ()` for runtime user input.
+
+The seed is one long expression that starts by describing the Cave,
+then enters a command loop. Once the seed finishes evaluating the
+initial `describe Cave; loop (Cave, [])`, the interpreter blocks on
+`read_line ()` and the input row appears.
+
+**Available commands:**
+
+| Command | Effect |
+|---------|--------|
+| `look` | Re-describe the current room |
+| `inventory` | List collected items |
+| `take` | Pick up the item in the current room (if any) |
+| `n` / `s` / `e` / `w` | Move in that direction |
+| `quit` | End the game |
+
+**Map:** Cave →(n) Hall →(e) Garden, Hall →(n) Outside.
+
+**Expected interaction:**
+
+```
+Damp cave. A lamp lies here. Exits: n.
+look
+Damp cave. A lamp lies here. Exits: n.
+take
+you take the lamp
+inventory
+lamp
+n
+Pillared hall. Exits: s, e, n (out).
+e
+Sunlit garden. A key glints here. Exits: w.
+take
+you take the key
+w
+Pillared hall. Exits: s, e, n (out).
+n
+You step into daylight. The end!
+```
+
+---
+
 ## named-adts
 
 Define a sum type with `type T = C1 | C2 | ...`, then construct

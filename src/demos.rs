@@ -38,7 +38,8 @@ pub static DEMOS: &[Demo] = &[
         name: "function-pattern-args",
         source: include_str!("../examples/function-pattern-args.ml"),
         interactive: false,
-        description: "Destructuring patterns directly in function arguments: `let swap (x, y) = ...`.",
+        description:
+            "Destructuring patterns directly in function arguments: `let swap (x, y) = ...`.",
     },
     Demo {
         name: "functions",
@@ -56,7 +57,8 @@ pub static DEMOS: &[Demo] = &[
         name: "higher-order-lists",
         source: include_str!("../examples/higher-order-lists.ml"),
         interactive: false,
-        description: "`List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas.",
+        description:
+            "`List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas.",
     },
     Demo {
         name: "led-blink",
@@ -151,6 +153,13 @@ pub static DEMOS: &[Demo] = &[
         description: "String literals, `^` concatenation, `print_endline`, `String.length`.",
     },
     Demo {
+        name: "text-adventure",
+        source: include_str!("../examples/text-adventure.ml"),
+        interactive: true,
+        description: "Interactive text adventure: navigate rooms, pick up items. \
+                      Commands: look, inventory, take, n/s/e/w, quit.",
+    },
+    Demo {
         name: "when-guards",
         source: include_str!("../examples/when-guards.ml"),
         interactive: false,
@@ -192,12 +201,23 @@ mod tests {
     }
 
     #[test]
-    fn only_repl_session_is_interactive() {
+    fn interactive_demos_exist() {
         let interactive: Vec<_> = DEMOS
             .iter()
             .filter(|d| d.interactive)
             .map(|d| d.name)
             .collect();
-        assert_eq!(interactive, vec!["repl-session"]);
+        assert!(
+            !interactive.is_empty(),
+            "at least one demo must be interactive"
+        );
+        assert!(
+            interactive.contains(&"repl-session"),
+            "repl-session must be interactive"
+        );
+        assert!(
+            interactive.contains(&"text-adventure"),
+            "text-adventure must be interactive"
+        );
     }
 }

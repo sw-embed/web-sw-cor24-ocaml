@@ -4,7 +4,7 @@
 //! user to point at specific ones.
 
 use web_sw_cor24_ocaml::demos::DEMOS;
-use web_sw_cor24_ocaml::runner::{DEFAULT_BATCH, Session};
+use web_sw_cor24_ocaml::runner::{Session, DEFAULT_BATCH};
 
 /// Per-demo cycle cap. Each demo runs at most `MAX_TICKS *
 /// DEFAULT_BATCH` cor24 instructions before we give up.
@@ -95,40 +95,37 @@ fn every_non_interactive_demo_halts_cleanly() {
 }
 
 #[test]
-fn repl_session_reaches_awaiting_input() {
-    // Find the interactive demo and run it long enough to drain the
-    // seed source. After the seed is consumed the runner should flip
-    // to `is_awaiting_input` so the UI can pop the input row.
-    let demo = DEMOS
-        .iter()
-        .find(|d| d.interactive)
-        .expect("an interactive demo");
-    let mut s = Session::new_interactive(demo.source);
-    for _ in 0..MAX_TICKS {
-        let r = s.tick();
-        if r.done || s.is_awaiting_input() {
-            break;
+fn interactive_demos_reach_awaiting_input() {
+    let interactive_demos: Vec<_> = DEMOS.iter().filter(|d| d.interactive).collect();
+    assert!(
+        !interactive_demos.is_empty(),
+        "expected at least one interactive demo"
+    );
+    for demo in interactive_demos {
+        let mut s = Session::new_interactive(demo.source);
+        for _ in 0..MAX_TICKS {
+            let r = s.tick();
+            if r.done || s.is_awaiting_input() {
+                break;
+            }
         }
+        assert!(
+            !s.is_done(),
+            "interactive demo '{}' should not have halted: {} (instrs={})",
+            demo.name,
+            s.stop_reason(),
+            s.instructions()
+        );
+        assert!(
+            s.is_awaiting_input(),
+            "expected awaiting input after seeding source for '{}' ({} instrs, raw: {:?})",
+            demo.name,
+            s.instructions(),
+            s.output()
+        );
+        let cleaned = s.clean_output();
+        eprintln!("{} cleaned after seed: {cleaned:?}", demo.name);
     }
-    assert!(
-        !s.is_done(),
-        "interactive demo should not have halted: {} (instrs={})",
-        s.stop_reason(),
-        s.instructions()
-    );
-    // The heuristic flips when the source queue empties; that's the
-    // signal the UI uses to show the input row.
-    assert!(
-        s.is_awaiting_input(),
-        "expected awaiting input after seeding source ({} instrs, raw: {:?})",
-        s.instructions(),
-        s.output()
-    );
-
-    // Sanity: cleaned output should contain the seed's expected
-    // results (42, 2, 42, 120, 99) once the seed has run.
-    let cleaned = s.clean_output();
-    eprintln!("repl-session cleaned after seed: {cleaned:?}");
 }
 
 // Reference DEFAULT_BATCH so a future tweak that removes the public
