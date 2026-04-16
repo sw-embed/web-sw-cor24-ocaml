@@ -526,6 +526,28 @@ impl Component for App {
                     </div>
                     <pre class="out" ref={self.output_ref.clone()}>{ &self.output }</pre>
                     { if self.awaiting_input {
+                        let demo_name = DEMOS.get(self.selected).map(|d| d.name).unwrap_or("");
+                        let hint = if demo_name == "text-adventure" {
+                            html! {
+                                <p class="input-hint">
+                                    { "commands: " }<code>{ "look" }</code>{ ", " }
+                                    <code>{ "inventory" }</code>{ ", " }<code>{ "take" }</code>{ ", " }
+                                    <code>{ "n" }</code>{ "/" }<code>{ "s" }</code>{ "/" }
+                                    <code>{ "e" }</code>{ "/" }<code>{ "w" }</code>{ ", " }
+                                    <code>{ "quit" }</code>
+                                    { ". Press ↑/↓ to recall previous inputs." }
+                                </p>
+                            }
+                        } else {
+                            html! {
+                                <p class="input-hint">
+                                    { "tip: each input must be a complete expression. \
+                                       `let` forms require an `in` clause, e.g. " }
+                                    <code>{ "let x = 42 in x" }</code>
+                                    { ". Press ↑/↓ to recall previous inputs." }
+                                </p>
+                            }
+                        };
                         html! {
                             <>
                                 <div class="input-row">
@@ -540,12 +562,7 @@ impl Component for App {
                                     />
                                     <button onclick={on_input_submit}>{ "Send" }</button>
                                 </div>
-                                <p class="input-hint">
-                                    { "tip: each input must be a complete expression. \
-                                       `let` forms require an `in` clause, e.g. " }
-                                    <code>{ "let x = 42 in x" }</code>
-                                    { ". Press ↑/↓ to recall previous inputs." }
-                                </p>
+                                { hint }
                             </>
                         }
                     } else { html! {} }}
