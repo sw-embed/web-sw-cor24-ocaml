@@ -54,6 +54,13 @@ pub static DEMOS: &[Demo] = &[
         description: "First-class functions and `let` bindings.",
     },
     Demo {
+        name: "guess",
+        source: include_str!("../examples/guess.ml"),
+        interactive: true,
+        description: "Number-guessing game: the target is 42. Enter an integer; \
+                      the demo replies `too low`, `too high`, or `correct!`.",
+    },
+    Demo {
         name: "hello",
         source: include_str!("../examples/hello.ml"),
         interactive: false,

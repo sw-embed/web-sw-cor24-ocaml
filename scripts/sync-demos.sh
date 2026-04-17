@@ -48,6 +48,7 @@ MAPPING=(
     "repl_session:repl-session"
     "demo_adventure:text-adventure"
     "demo_echo_loop:echo-loop"
+    "demo_guess:guess"
 )
 
 # Demos whose source is one logical expression that spans multiple

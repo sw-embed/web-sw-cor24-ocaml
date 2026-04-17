@@ -1,0 +1,11 @@
+number = 2
+slug = "preview-build-and-commit"
+status = "pending"
+description = """
+# Rebuild pages and preview with serve.sh
+
+Run ./scripts/build-pages.sh (or t..."""
+role = "production"
+context_files = []
+created_at = "2026-04-17T12:43:26"
+commits = []
