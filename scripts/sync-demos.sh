@@ -68,7 +68,7 @@ COLLAPSE_NEWLINES=("led-blink")
 # ships a hand-edited examples/<name>.ml that this script must NOT
 # overwrite. Document the divergence here and in the demo's
 # docs/demos.md section.
-LOCAL_OVERRIDE=("led-toggle")
+LOCAL_OVERRIDE=("led-toggle" "guess")
 
 echo "Syncing demos from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
 for entry in "${MAPPING[@]}"; do

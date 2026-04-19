@@ -1,6 +1,6 @@
 number = 2
 slug = "preview-build-and-commit"
-status = "pending"
+status = "in-progress"
 description = """
 # Rebuild pages and preview with serve.sh
 

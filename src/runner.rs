@@ -336,6 +336,13 @@ impl Session {
     pub fn raw_output_len(&self) -> usize {
         self.emu.get_uart_output().len()
     }
+
+    /// Current program counter. The App uses this to distinguish a
+    /// tight UART-RX poll loop (PC bounces within ~10 bytes) from the
+    /// interp actively parsing/evaluating (PC roams widely).
+    pub fn pc(&self) -> u32 {
+        self.emu.pc()
+    }
 }
 
 #[cfg(test)]

@@ -67,7 +67,14 @@ pub struct App {
     // walking the history, and is `None` when editing a fresh line.
     input_history: Vec<String>,
     history_cursor: Option<usize>,
-    output_len_at_feed: Option<usize>,
+    // `is_awaiting_input` fires whenever rx_queue is empty, which is
+    // true while the interp is still parsing/evaluating the seed OR
+    // a just-fed input line. To avoid flashing the prompt mid-work,
+    // we sample PC at the end of each tick: a tight UART-RX poll
+    // loop stays inside a handful of bytes, while parsing/eval
+    // scatters PC across the interp's code. When the last N samples
+    // all fall within a small window, we trust the interp is idle.
+    pc_samples: Vec<u32>,
     output_ref: NodeRef,
     input_ref: NodeRef,
     s2_on: bool,
@@ -92,6 +99,7 @@ impl App {
             self.awaiting_input = false;
             self.input_history.clear();
             self.history_cursor = None;
+            self.pc_samples.clear();
         }
     }
 
@@ -109,6 +117,7 @@ impl App {
         self.awaiting_input = false;
         self.input_history.clear();
         self.history_cursor = None;
+        self.pc_samples.clear();
         self.running = true;
         self.error = false;
         self.budget_exhausted = false;
@@ -158,7 +167,7 @@ impl Component for App {
             awaiting_input: false,
             input_history: Vec::new(),
             history_cursor: None,
-            output_len_at_feed: None,
+            pc_samples: Vec::new(),
             output_ref: NodeRef::default(),
             input_ref: NodeRef::default(),
             s2_on: false,
@@ -260,17 +269,28 @@ impl Component for App {
                 let result = session.tick();
                 self.led_on = session.led_on();
                 if session.is_awaiting_input() {
-                    // is_awaiting_input fires as soon as our rx_queue
-                    // empties, which can happen BEFORE the interpreter
-                    // has finished evaluating the line we fed it. If
-                    // output hasn't grown since the last feed_input,
-                    // the interp is still mid-evaluation — keep ticking
-                    // instead of stopping and forcing the user to hit
-                    // Enter a second time.
-                    let still_processing = self
-                        .output_len_at_feed
-                        .is_some_and(|len| session.clean_output().len() <= len);
-                    if still_processing {
+                    // is_awaiting_input fires whenever rx_queue is
+                    // empty, but that's also true while the interp
+                    // is mid-parse/eval of the seed or a just-fed
+                    // line. Sample PC at tick boundary: a tight
+                    // UART-RX poll loop keeps PC within a handful of
+                    // bytes, while parsing/eval scatters it across
+                    // the interp's code. Once the last N samples all
+                    // fall within PC_POLL_WINDOW of each other, we
+                    // trust the interp is truly idle.
+                    const SAMPLES_REQUIRED: usize = 3;
+                    const PC_POLL_WINDOW: u32 = 64;
+                    let pc = session.pc();
+                    self.pc_samples.push(pc);
+                    if self.pc_samples.len() > SAMPLES_REQUIRED {
+                        self.pc_samples.remove(0);
+                    }
+                    let settled = self.pc_samples.len() == SAMPLES_REQUIRED && {
+                        let min = *self.pc_samples.iter().min().unwrap();
+                        let max = *self.pc_samples.iter().max().unwrap();
+                        max - min < PC_POLL_WINDOW
+                    };
+                    if !settled {
                         self.output = session.clean_output();
                         self.elapsed_ms = now_ms() - self.started_at;
                         self.status = format!(
@@ -281,7 +301,7 @@ impl Component for App {
                         self.schedule_tick(ctx);
                         return true;
                     }
-                    self.output_len_at_feed = None;
+                    self.pc_samples.clear();
                     self.awaiting_input = true;
                     self.output = session.clean_output();
                     self.elapsed_ms = now_ms() - self.started_at;
@@ -292,6 +312,9 @@ impl Component for App {
                     );
                     return true;
                 }
+                // Not awaiting any more (running, halted, etc.) — drop
+                // the stability snapshot so the next wait starts fresh.
+                self.pc_samples.clear();
                 if result.done {
                     let instrs = session.instructions();
                     let reason = session.stop_reason();
@@ -335,9 +358,11 @@ impl Component for App {
                 }
                 self.history_cursor = None;
                 if let Some(session) = self.session.as_mut() {
-                    self.output_len_at_feed = Some(session.clean_output().len());
                     session.feed_input(&line);
                 }
+                // Fresh input — let the tick loop re-establish a
+                // stability snapshot from scratch.
+                self.pc_samples.clear();
                 self.awaiting_input = false;
                 self.status = "running...".into();
                 self.schedule_tick(ctx);

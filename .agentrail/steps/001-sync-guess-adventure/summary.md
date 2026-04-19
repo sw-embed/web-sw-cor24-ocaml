@@ -1,0 +1,1 @@
+Added demo_guess->guess mapping + interactive Demo entry; re-synced text-adventure and echo-loop; re-vendored ocaml.p24m and pvm.s so the interp supports exit/help/inv additions. cargo test demos passes (4/4).
