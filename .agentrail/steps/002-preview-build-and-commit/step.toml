@@ -1,6 +1,6 @@
 number = 2
 slug = "preview-build-and-commit"
-status = "in-progress"
+status = "completed"
 description = """
 # Rebuild pages and preview with serve.sh
 
@@ -8,4 +8,5 @@ Run ./scripts/build-pages.sh (or t..."""
 role = "production"
 context_files = []
 created_at = "2026-04-17T12:43:26"
-commits = []
+completed_at = "2026-04-22T09:33:45"
+commits = ["4d44cee21e605e2f690a437b18afdcb1ce86faec"]

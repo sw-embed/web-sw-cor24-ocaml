@@ -1,0 +1,1 @@
+Rebuilt pages/ with current build metadata; previewed via serve.sh and user validated guess demo. Adventure demo still exhibits TRAP 2 upstream when take/go/take Cave→Hall→Cave — reproduced in CLI, filed as upstream issue. Committed pages refresh.
