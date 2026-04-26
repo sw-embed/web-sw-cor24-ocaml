@@ -1,6 +1,6 @@
 number = 2
 slug = "multifile-phase-1"
-status = "pending"
+status = "completed"
 description = """
 # Multi-file demos: Phase 1 (data model + runner concat, no UI changes)
 
@@ -8,4 +8,5 @@ Impl..."""
 role = "production"
 context_files = []
 created_at = "2026-04-26T07:20:43"
-commits = []
+completed_at = "2026-04-26T08:17:53"
+commits = ["673084039420590420a95c809a96b9c6e531eb0d"]
