@@ -1,6 +1,6 @@
 number = 2
 slug = "rebuild-pages"
-status = "pending"
+status = "completed"
 description = """
 # Rebuild pages with modules demo
 
@@ -8,4 +8,5 @@ The previous step (001-add-modules-demo-an..."""
 role = "legacy"
 context_files = []
 created_at = "2026-04-25T21:22:16"
-commits = []
+completed_at = "2026-04-25T21:26:53"
+commits = ["f29b88a436500e0198d48d2d4364a2bf76acc634"]

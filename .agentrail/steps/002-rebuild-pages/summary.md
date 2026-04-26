@@ -1,0 +1,1 @@
+Ran scripts/build-pages.sh to regenerate pages/ with the 34-entry demo catalog including modules. WASM rolled 8623ba51...->9832258c..., trunk updated index.html SRI in lockstep. Verified the modules demo source ('let __module = "Math"' / 'let __module = "Main"') is baked into the new WASM via strings(1). Committed as chore(pages).
