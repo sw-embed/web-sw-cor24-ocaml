@@ -139,6 +139,98 @@ fn interactive_demos_reach_awaiting_input() {
 const _: u64 = DEFAULT_BATCH;
 
 #[test]
+fn text_adventure_take_lamp_only_once() {
+    // Regression test for the take bug: in the buggy version,
+    // each `take` in the Cave produced "you take the lamp" again
+    // and the cave's look still mentioned the lamp. Fix tracks
+    // (room, inventory, lamp_taken, key_taken) in the loop state.
+    let demo = DEMOS.iter().find(|d| d.name == "text-adventure").unwrap();
+    let full = demo.full_source();
+    let mut s = Session::new_interactive(&full);
+
+    // Drain the seed.
+    for _ in 0..MAX_TICKS {
+        if s.is_awaiting_input() || s.is_done() {
+            break;
+        }
+        s.tick();
+    }
+    assert!(s.is_awaiting_input(), "seed should reach awaiting_input");
+
+    // 1st take: should pick up the lamp.
+    s.feed_input("take");
+    // Tick the full budget rather than bailing on is_awaiting_input --
+    // rx_queue empties as soon as bytes flow into UART, so
+    // is_awaiting_input flips true while the interpreter is mid-eval.
+    // Once the interp blocks on the next read_line(), further ticks are
+    // no-ops, so unbounded ticking is safe.
+    for _ in 0..MAX_TICKS {
+        s.tick();
+        if s.is_done() {
+            break;
+        }
+    }
+    assert!(
+        s.clean_output().contains("you take the lamp"),
+        "expected 'you take the lamp' after first take\n  cleaned: {:?}",
+        s.clean_output()
+    );
+
+    // 2nd take in the same room: should reject -- "nothing here."
+    s.feed_input("take");
+    // Tick the full budget rather than bailing on is_awaiting_input --
+    // rx_queue empties as soon as bytes flow into UART, so
+    // is_awaiting_input flips true while the interpreter is mid-eval.
+    // Once the interp blocks on the next read_line(), further ticks are
+    // no-ops, so unbounded ticking is safe.
+    for _ in 0..MAX_TICKS {
+        s.tick();
+        if s.is_done() {
+            break;
+        }
+    }
+    let cleaned = s.clean_output();
+    assert!(
+        cleaned.contains("nothing here."),
+        "expected 'nothing here.' on second take\n  cleaned: {cleaned:?}"
+    );
+    // And the second take must NOT have produced another "you take the lamp".
+    let lamp_take_count = cleaned.matches("you take the lamp").count();
+    assert_eq!(
+        lamp_take_count, 1,
+        "lamp should be takeable only once; cleaned: {cleaned:?}"
+    );
+
+    // look should describe the cave WITHOUT mentioning the lamp now.
+    s.feed_input("look");
+    for _ in 0..MAX_TICKS {
+        s.tick();
+        if s.is_awaiting_input() || s.is_done() {
+            break;
+        }
+    }
+    let cleaned = s.clean_output();
+    // Find the most recent describe (after the second take).
+    let after_second_take = cleaned
+        .rfind("nothing here.")
+        .map(|i| &cleaned[i..])
+        .unwrap_or(&cleaned);
+    assert!(
+        !after_second_take.contains("A lamp lies here."),
+        "post-take look should not mention the lamp\n  tail: {after_second_take:?}"
+    );
+
+    // Cleanup: quit.
+    s.feed_input("quit");
+    for _ in 0..MAX_TICKS {
+        s.tick();
+        if s.is_done() {
+            break;
+        }
+    }
+}
+
+#[test]
 fn echo_loop_feed_and_check() {
     let demo = DEMOS.iter().find(|d| d.name == "echo-loop").unwrap();
     let full = demo.full_source();

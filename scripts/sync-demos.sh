@@ -88,7 +88,14 @@ COLLAPSE_NEWLINES=("led-blink")
 #   educational climax of the namespace-isolation story rather than a
 #   bug. The interpreter has no try/catch; the REPL resets eval_error
 #   per line and continues.
-LOCAL_OVERRIDE=("led-toggle" "guess" "modules")
+# - text-adventure: CLI source (demo_adventure.ml) has a take bug --
+#   pickup is a pure function of room, so each `take` in the Cave
+#   adds another Lamp to inventory and the cave still describes the
+#   lamp. Web variant extends loop state to a 4-tuple
+#   (room, inventory, lamp_taken, key_taken) so describe and pickup
+#   can branch on what's been collected. CLI fix is a separate
+#   follow-up flagged for the sw-cor24-ocaml agent.
+LOCAL_OVERRIDE=("led-toggle" "guess" "modules" "text-adventure")
 
 echo "Syncing demos from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
 for entry in "${MAPPING[@]}"; do
