@@ -756,16 +756,25 @@ fn language_reference_body() -> Html {
             <p>{ "This is an " }<em>{ "integer-subset OCaml" }</em>
                 { " interpreter (sw-cor24-ocaml): no floats, no references, \
                      no exceptions, a small built-in standard library. The REPL \
-                     reads one complete expression per line and echoes its value." }</p>
+                     reads one complete expression per line and echoes its value. \
+                     Failing lines print " }<code>{ "EVAL ERROR" }</code>
+                { " (or " }<code>{ "PARSE ERROR" }</code>
+                { ") and the REPL continues with the next line -- there is no " }
+                <code>{ "try ... with" }</code>{ "." }</p>
 
             <h3>{ "Literals" }</h3>
             <ul>
                 <li>{ "Integers: " }<code>{ "0 42 -7 1000000" }</code></li>
-                <li>{ "Strings: " }<code>{ "\"hello\"" }</code>{ " (concatenate with " }
-                    <code>{ "^" }</code>{ ")" }</li>
+                <li>{ "Strings: " }<code>{ "\"hello\"" }</code>
+                    { " -- concatenate with " }<code>{ "^" }</code>
+                    { ", escapes " }<code>{ "\\n \\t \\\\ \\\"" }</code>
+                    { " (e.g. " }<code>{ "\"line1\\nline2\"" }</code>{ ")" }</li>
                 <li>{ "Unit: " }<code>{ "()" }</code></li>
                 <li>{ "Pairs / tuples: " }<code>{ "(1, 2)" }</code>{ ", " }
-                    <code>{ "(a, (b, c))" }</code></li>
+                    <code>{ "(a, (b, c))" }</code>
+                    { ". 3+ element tuples display as right-nested pairs in the REPL: " }
+                    <code>{ "(1, 2, 3)" }</code>{ " shows as " }
+                    <code>{ "(1, (2, 3))" }</code>{ "." }</li>
                 <li>{ "Lists: " }<code>{ "[]" }</code>{ ", " }
                     <code>{ "[1; 2; 3]" }</code>{ ", " }
                     <code>{ "1 :: nil" }</code>{ ", " }
@@ -791,13 +800,14 @@ fn language_reference_body() -> Html {
 
             <h3>{ "Bindings and functions" }</h3>
             <ul>
-                <li><code>{ "let x = expr in body" }</code>
-                    { " -- bare top-level " }<code>{ "let x = 42" }</code>
-                    { " is " }<em>{ "not" }</em>{ " accepted; use " }
-                    <code>{ "let x = 42 in x" }</code>{ "." }</li>
-                <li><code>{ "let rec f = fun n -> ..." }</code>
-                    { " / " }<code>{ "let rec f n = ..." }</code>
-                    { " for recursion." }</li>
+                <li>{ "Local: " }<code>{ "let x = expr in body" }</code></li>
+                <li>{ "Top-level (no " }<code>{ "in" }</code>{ "): " }
+                    <code>{ "let x = 42" }</code>{ ", " }
+                    <code>{ "let f x = x + 1" }</code>
+                    { ". Lasts until end of program or next " }
+                    <code>{ "let __module = ..." }</code>{ " switch." }</li>
+                <li>{ "Recursion: " }<code>{ "let rec f n = ..." }</code>
+                    { " / " }<code>{ "let rec f = fun n -> ..." }</code></li>
                 <li>{ "Curried sugar: " }<code>{ "let add x y = x + y in add 3 4" }</code></li>
                 <li>{ "Lambdas: " }<code>{ "fun x -> x + 1" }</code>{ ", " }
                     <code>{ "fun x y -> x + y" }</code></li>
@@ -805,6 +815,12 @@ fn language_reference_body() -> Html {
                     { " -- shorthand for " }
                     <code>{ "fun x -> match x with ..." }</code></li>
                 <li>{ "Destructuring args: " }<code>{ "let swap (x, y) = (y, x)" }</code></li>
+                <li>{ "Destructuring on LHS: " }
+                    <code>{ "let (a, b) = (1, 2)" }</code>{ ", " }
+                    <code>{ "let h :: t = [1; 2; 3]" }</code>{ ", " }
+                    <code>{ "let Some n = Some 42" }</code></li>
+                <li>{ "Run for side effect: " }<code>{ "let () = print_endline \"hi\"" }</code>
+                    { " or " }<code>{ "let _ = expr" }</code></li>
             </ul>
 
             <h3>{ "Control flow" }</h3>
@@ -815,21 +831,46 @@ fn language_reference_body() -> Html {
                 <li>{ "Guards: " }<code>{ "| n when n < 0 -> ..." }</code></li>
                 <li>{ "Patterns: literals, " }<code>{ "_" }</code>
                     { " wildcard, tuples " }<code>{ "(a, b)" }</code>
-                    { ", lists " }<code>{ "[]" }</code>{ " / " }<code>{ "h :: t" }</code>
+                    { " (arity must match the subject -- 3-tuple match needs 3-tuple arms), lists " }
+                    <code>{ "[]" }</code>{ " / " }<code>{ "h :: t" }</code>
                     { " / " }<code>{ "[a; b]" }</code>{ ", " }
                     <code>{ "None" }</code>{ " / " }<code>{ "Some x" }</code>
-                    { ", ADT constructors." }</li>
+                    { ", ADT constructors with or without payload." }</li>
             </ul>
 
             <h3>{ "Types" }</h3>
             <ul>
-                <li><code>{ "type color = Red | Green | Blue" }</code>
-                    { " (nullary constructors only)" }</li>
+                <li>{ "Nullary constructors: " }
+                    <code>{ "type color = Red | Green | Blue" }</code></li>
+                <li>{ "Constructors with payload: " }
+                    <code>{ "type token = TInt of int | TIdent of string | TLArrow | TEOF" }</code>
+                    { ". Match binds the payload: " }
+                    <code>{ "match t with TInt n -> n | _ -> 0" }</code></li>
                 <li>{ "Built-ins: " }<code>{ "option" }</code>
                     { " (" }<code>{ "None" }</code>{ " | " }<code>{ "Some x" }</code>{ ")" }</li>
             </ul>
 
-            <h3>{ "Module-qualified functions" }</h3>
+            <h3>{ "Modules and namespaces" }</h3>
+            <ul>
+                <li><code>{ "let __module = \"Math\"" }</code>
+                    { " is a reserved directive that marks subsequent definitions \
+                       as living in module " }<code>{ "Math" }</code>{ "." }</li>
+                <li>{ "Cross-module lookup must be qualified: from module " }
+                    <code>{ "Main" }</code>{ ", call " }<code>{ "Math.add 2 3" }</code>
+                    { " (not bare " }<code>{ "add 2 3" }</code>{ ")." }</li>
+                <li>{ "Multi-file demos (e.g. " }<code>{ "modules-multifile" }</code>
+                    { ") ship aux " }<code>{ ".ml" }</code>
+                    { " files alongside the main source. The runner concatenates them \
+                       with synthesized " }<code>{ "let __module = \"...\"" }</code>
+                    { " directives -- file " }<code>{ "math.ml" }</code>
+                    { " becomes module " }<code>{ "Math" }</code>{ ", " }
+                    <code>{ "game_state.ml" }</code>{ " becomes " }
+                    <code>{ "Game_state" }</code>{ "." }</li>
+                <li>{ "See the " }<code>{ "modules" }</code>{ " and " }
+                    <code>{ "modules-multifile" }</code>{ " demos." }</li>
+            </ul>
+
+            <h3>{ "Built-in modules" }</h3>
             <ul>
                 <li><code>{ "List.length" }</code>{ ", " }
                     <code>{ "List.rev" }</code>{ ", " }
@@ -843,6 +884,15 @@ fn language_reference_body() -> Html {
                 <li><code>{ "String.length" }</code></li>
             </ul>
 
+            <h3>{ "Type conversions" }</h3>
+            <ul>
+                <li><code>{ "string_of_int : int -> string" }</code></li>
+                <li><code>{ "int_of_string : string -> int" }</code>
+                    { " -- lenient: malformed input (" }
+                    <code>{ "\"abc\"" }</code>{ ", " }<code>{ "\"\"" }</code>
+                    { ") returns " }<code>{ "0" }</code>{ ", does not raise." }</li>
+            </ul>
+
             <h3>{ "I/O and hardware" }</h3>
             <ul>
                 <li><code>{ "print_int : int -> unit" }</code>
@@ -851,8 +901,14 @@ fn language_reference_body() -> Html {
                     { " -- writes string + newline" }</li>
                 <li><code>{ "putc : int -> unit" }</code>
                     { " -- writes one byte to UART" }</li>
+                <li><code>{ "getc : unit -> int" }</code>
+                    { " -- reads one byte of input (interactive demos)" }</li>
                 <li><code>{ "read_line : unit -> string" }</code>
                     { " -- reads a line of text input from the user (interactive demos)" }</li>
+                <li><code>{ "exit : int -> 'a" }</code>
+                    { " -- halts the program with an exit code; used by " }
+                    <code>{ "echo-loop" }</code>{ " / " }<code>{ "guess" }</code>
+                    { " to terminate cleanly." }</li>
                 <li><code>{ "led_on ()" }</code>{ ", " }
                     <code>{ "led_off ()" }</code>{ ", " }
                     <code>{ "set_led : bool -> unit" }</code></li>
@@ -879,6 +935,15 @@ fn language_reference_body() -> Html {
                      expressions (" }<code>{ "print_int" }</code>
                     { ", " }<code>{ "print_endline" }</code>
                     { ") if you want raw output and no echo formatting." }</li>
+                <li>{ "A failing line prints " }<code>{ "EVAL ERROR" }</code>
+                    { " (or " }<code>{ "PARSE ERROR" }</code>
+                    { ") and the REPL keeps going. There is no " }
+                    <code>{ "try ... with" }</code>
+                    { ", no exceptions; demos that need to bail out call " }
+                    <code>{ "exit 0" }</code>{ "." }</li>
+                <li>{ "3-tuples (and longer) display as right-nested pairs: " }
+                    <code>{ "(1, 2, 3)" }</code>{ " echoes as " }
+                    <code>{ "(1, (2, 3))" }</code>{ "." }</li>
             </ul>
         </>
     }
