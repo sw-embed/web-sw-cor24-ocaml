@@ -1,6 +1,6 @@
 number = 3
 slug = "release-v0_2_0"
-status = "pending"
+status = "completed"
 description = """
 # Cut v0.2.0 release
 
@@ -8,4 +8,5 @@ Collapse the giant `[Unreleased]` section in CHANGES.md..."""
 role = "production"
 context_files = []
 created_at = "2026-04-26T07:21:05"
-commits = []
+completed_at = "2026-04-26T09:03:34"
+commits = ["9be5166c6f7970e778ac62d464da63e9046dd868"]
