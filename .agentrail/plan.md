@@ -1,52 +1,41 @@
-# Help modal refresh + canonical examples + ModuleEditor
+# Fix text-adventure prompt + add Hello, World demo
 
-Three lower-leverage but user-visible items the user picked off the
-"next possible steps" list. Each step bundles its feature change
-with a pages rebuild + push so it ships independently.
+Two small post-deploy issues the user reported:
 
-## Steps
+1. text-adventure doesn't print its initial cave description before
+   the input prompt appears. Root cause: the App's PC-stability
+   detector (lib.rs Tick handler, PC_POLL_WINDOW = 64 bytes,
+   SAMPLES_REQUIRED = 3) false-positives during parser warm-up of
+   the longer text-adventure source. Parser PC range observed at
+   31 bytes (e.g. 518..549) which is within 64 -- detector reports
+   "settled", App stops ticking, seed never finishes printing.
 
-### 001-refresh-help-modal-language-ref
+   Fix: tighten PC_POLL_WINDOW to 16 so only the truly tight
+   read_line UART RX poll loop (a 4-byte fetch+branch) matches.
+   Verify all 4 interactive demos still reach awaiting_input
+   correctly.
 
-Update the in-UI help modal's Language Reference to cover features
-shipped in v0.2.0 that are not yet documented in the modal:
-top-level `let`, variant constructors with payloads, multi-arity
-tuple matching, string escape sequences (`\n` `\t` `\\` `\"`), the
-`modules` namespace mechanism (single-file via `__module`
-directive AND multi-file via `auxiliary_files`), `string_of_int` /
-`int_of_string`, `=`/`<>` on strings. Keep additions tight and
-example-led; the modal is reference, not a tutorial.
+2. The current `hello` demo prints the integer 42, not "Hello,
+   World!" the user requested a string variant. Add a new
+   `hello-world` demo showing `print_endline "Hello, World!"`.
 
-Pages rebuild + push at the end.
+## Step
 
-### 002-canonical-minimal-examples
+### 001-fix-prompt-add-hello-world
 
-Surface the 16 `canonical_*.ml` one-liner snippets from
-`../sw-cor24-ocaml/tests/` as a "minimal examples" tier in the
-dropdown -- ideal for users who just want to see one-line
-demonstrations of individual features. Use HTML `<optgroup>` (or
-equivalent Yew construct) so the canonical snippets group
-visually under a "Minimal examples" label rather than
-interleaving with the existing 35-entry catalog.
-
-Vendoring path: extend `scripts/sync-demos.sh` with a `MINIMAL_MAPPING`
-(or similar) and add a new field to `Demo` (e.g.
-`category: Category` enum with `Standard` / `Minimal` variants,
-default `Standard`).
-
-Pages rebuild + push at the end.
-
-### 003-multifile-phase-2-module-editor
-
-Phase 2 of `docs/multiple-file-demos-plan.md`: ship a
-`ModuleEditor` component patterned 1:1 on
-`../web-sw-cor24-plsw/src/components/macro_editor.rs`. One
-collapsible notebook cell per `AuxFile` with a filename header
-and a textarea (reuse the OCaml syntax highlighting from the main
-editor). Wire it as a notebook cell that appears below the main
-source editor when the active demo has `auxiliary_files.len() > 0`.
-State: aux file edits live in component state per session (no
-persistence, no add/remove yet -- those are Phase 3). Re-running
-the demo concatenates current edits, not the baked-in source.
-
-Pages rebuild + push at the end.
+- Change `PC_POLL_WINDOW: u32 = 64` -> `16` in src/lib.rs Tick
+  handler.
+- Add `hello-world` demo: hand-written examples/hello-world.ml
+  containing `print_endline "Hello, World!"`. Slot alphabetically
+  between `hello` and `higher-order-lists` in src/demos.rs.
+  category: Standard.
+- Update docs/demos.md with the new entry near the `hello` entry.
+- Add an integration test that runs text-adventure through the
+  same App-style PC-stability loop (this test was prototyped as
+  `text_adventure_seed_prints_cave_description_before_input_prompt`
+  during diagnosis and is currently in tests/demos.rs but
+  failing). Confirm it now passes with the tightened window.
+- Run all tests including the slow text-adventure regression.
+- Commit feat(ui) for the lib.rs change + feat(demos) for hello-
+  world. Could be one combined commit since they ship together.
+- Build pages, commit chore(pages), push.

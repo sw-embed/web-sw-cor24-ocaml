@@ -1,0 +1,13 @@
+number = 1
+slug = "fix-prompt-add-hello-world"
+status = "in-progress"
+description = """
+# Fix text-adventure prompt + add Hello, World demo
+
+## Tasks
+
+1. In src/lib...."""
+role = "production"
+context_files = []
+created_at = "2026-04-26T13:44:08"
+commits = []
