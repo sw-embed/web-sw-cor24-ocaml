@@ -110,6 +110,14 @@ pub static DEMOS: &[Demo] = &[
         description: "Sum, length, map, swap, countdown — lists + pairs in one program.",
     },
     Demo {
+        name: "modules",
+        source: include_str!("../examples/modules.ml"),
+        interactive: false,
+        description: "User-defined module namespaces via the `let __module = \"...\"` \
+                      directive: define `Math.add`/`Math.double`, switch to module `Main`, \
+                      and dispatch by qualified name.",
+    },
+    Demo {
         name: "multi-arg",
         source: include_str!("../examples/multi-arg.ml"),
         interactive: false,

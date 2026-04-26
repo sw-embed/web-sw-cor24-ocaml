@@ -56,6 +56,7 @@ MAPPING=(
     "eval_toplevel_let:toplevel-let"
     "eval_tuple_arity:tuple-arity"
     "eval_user_variants:variants-with-payload"
+    "eval_module_namespace_directive:modules"
 )
 
 # Demos whose source is one logical expression that spans multiple
