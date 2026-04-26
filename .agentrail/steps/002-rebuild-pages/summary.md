@@ -1,0 +1,1 @@
+Ran scripts/build-pages.sh to rebuild pages/ release artifacts with refreshed assets/ocaml.p24m and 33-entry demo catalog. WASM bundle rolled d54eebcd...->8623ba51..., trunk updated index.html SRI references in lockstep. Committed as chore(pages).
