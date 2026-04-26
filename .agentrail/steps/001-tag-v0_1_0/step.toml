@@ -1,0 +1,14 @@
+number = 1
+slug = "tag-v0_1_0"
+status = "completed"
+description = """
+# Retroactively tag v0.1.0 at commit 4406834
+
+## Tasks
+
+1. Verify the target ..."""
+role = "production"
+context_files = []
+created_at = "2026-04-26T10:14:41"
+completed_at = "2026-04-26T10:15:10"
+commits = ["c609030f27a1b7adb899ec422f627ac8412d62f0"]
