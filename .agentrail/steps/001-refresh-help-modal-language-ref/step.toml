@@ -1,0 +1,11 @@
+number = 1
+slug = "refresh-help-modal-language-ref"
+status = "pending"
+description = """
+# Refresh help modal Language Reference for v0.2.0 features
+
+The in-UI help m..."""
+role = "production"
+context_files = []
+created_at = "2026-04-26T11:14:01"
+commits = []
