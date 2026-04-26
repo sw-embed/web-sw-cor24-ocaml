@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+_No unreleased changes._
+
+## v0.2.0 -- 2026-04-26
+
+### Demo doc refresh + multi-file Phase 1 (`docs-multifile-and-v0_2_0` saga, 2026-04-26)
+
+- `docs/demos.md` refreshed to cover 10 missing demos (the 8 from
+  the two prior sagas plus `echo-loop` and `guess`). Expected
+  outputs captured live from the runner via
+  `cargo test every_non_interactive_demo_halts_cleanly --
+  --nocapture`, so the doc reflects exactly what the live UI panel
+  shows. Topical insertions next to related demos rather than
+  alphabetical. Also corrected the `tuple-arity` expected output
+  to `(1, (2, 3))` -- the REPL displays multi-element tuples as
+  right-nested pairs.
+- Phase 1 of `docs/multiple-file-demos-plan.md`: `AuxFile` struct
+  plus `Demo.auxiliary_files`. New `Demo::concat_main` /
+  `Demo::full_source` helpers with `capitalize_stem` matching the
+  CLI rule (`math.ml -> Math`, `game_state.ml -> Game_state`).
+  First multi-file demo `modules-multifile` vendored from CLI
+  `tests/{main,math}.ml`; output `5 / 25 / 14`. Catalog now 35
+  demos. The editor still shows only the main file in this phase;
+  Phase 2 (ModuleEditor component) and Phase 3 (add/remove/upload)
+  remain out of scope.
+- `scripts/sync-demos.sh` gained a `MULTIFILE_MAPPING` table for
+  refreshing multi-file demo trees in place.
+- 21 cargo tests pass (was 17, +4 for new aux-file invariants:
+  `aux_filenames_are_unique_within_each_demo`,
+  `capitalize_stem_matches_cli_rule`,
+  `full_source_is_passthrough_without_aux`,
+  `full_source_injects_module_directives_with_aux`).
+
 ### Annotate modules demo (`fix-modules-demo` saga, 2026-04-25)
 
 - Hand-edited `examples/modules.ml` under `LOCAL_OVERRIDE` so
