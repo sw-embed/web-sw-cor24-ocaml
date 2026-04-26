@@ -242,15 +242,19 @@ EVAL ERROR
 
 ## modules-multifile
 
-Phase 1 of the multi-file demos plan
-(`docs/multiple-file-demos-plan.md`). Two `.ml` files vendored under
+Multi-file demo. Two `.ml` files vendored under
 `examples/modules-multifile/`: `math.ml` defines `Math.add` /
 `Math.square` / `Math.double`; `main.ml` calls them by qualified name.
 The runner concatenates the files with synthesized
 `let __module = "..."` directives, exactly mirroring what the CLI's
-`scripts/run-ocaml.sh` does when invoked with multiple inputs. The
-editor pane shows only `main.ml`; the aux file is baked in read-only
-in this phase.
+`scripts/run-ocaml.sh` does when invoked with multiple inputs.
+
+Phase 2 (shipped): both files are editable in the browser. The main
+source pane shows `main.ml`; below it, the **module files** panel
+shows one collapsible cell per aux file (`math.ml` here), reusing
+the same OCaml editor styling. Edit either side, hit Run, and the
+runner concatenates the current text -- not the baked-in source.
+Phase 3 (add/remove/upload) is still TBD.
 
 The capitalisation rule for module names: strip `.ml`, uppercase the
 first character, leave the rest (so `math.ml` -> `Math`,

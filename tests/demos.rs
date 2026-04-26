@@ -3,7 +3,7 @@
 //! cleanly. Diagnoses "some demos produce errors" without needing the
 //! user to point at specific ones.
 
-use web_sw_cor24_ocaml::demos::DEMOS;
+use web_sw_cor24_ocaml::demos::{concat_with_aux, DEMOS};
 use web_sw_cor24_ocaml::runner::{Session, DEFAULT_BATCH};
 
 /// Per-demo cycle cap. Each demo runs at most `MAX_TICKS *
@@ -137,6 +137,35 @@ fn interactive_demos_reach_awaiting_input() {
 // const surfaces here, not in a downstream consumer.
 #[allow(dead_code)]
 const _: u64 = DEFAULT_BATCH;
+
+#[test]
+fn concat_with_aux_edited_runs_through_session() {
+    // Phase 2 invariant: when the App feeds Session a `concat_with_aux`
+    // built from user-edited aux content, the result reflects the edit
+    // -- not the demo's baked-in `auxiliary_files`.
+    //
+    // Simulate a user who edited math.ml to redefine Math.add as
+    // multiplication. Main is unchanged: `Math.add 2 3` should now
+    // print 6, not 5.
+    let edited_math = "let add x y = x * y\nlet square x = x * x\nlet double x = add x x\n";
+    let main = "Math.add 2 3";
+    let aux = [("math.ml", edited_math)];
+    let full = concat_with_aux(&aux, main);
+
+    let mut s = Session::new(&full);
+    for _ in 0..MAX_TICKS {
+        let r = s.tick();
+        if r.done {
+            break;
+        }
+    }
+    let cleaned = s.clean_output();
+    assert!(s.is_done() && s.is_halted(), "session should halt cleanly");
+    assert!(
+        cleaned.trim() == "6",
+        "edited Math.add should make 2 * 3 = 6, got cleaned={cleaned:?}\n  full source:\n{full}"
+    );
+}
 
 #[test]
 fn text_adventure_take_lamp_only_once() {

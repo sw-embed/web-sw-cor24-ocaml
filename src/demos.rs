@@ -53,17 +53,14 @@ impl Demo {
         if self.auxiliary_files.is_empty() {
             return main.to_string();
         }
-        let mut out = String::new();
-        for aux in self.auxiliary_files {
-            out.push_str(&format!("let __module = \"{}\"\n", capitalize_stem(aux.name)));
-            out.push_str(aux.source);
-            if !aux.source.ends_with('\n') {
-                out.push('\n');
-            }
-        }
-        out.push_str("let __module = \"Main\"\n");
-        out.push_str(main);
-        out
+        // Convert baked-in &'static str aux into the borrowed form
+        // `concat_with_aux` accepts.
+        let pairs: Vec<(&str, &str)> = self
+            .auxiliary_files
+            .iter()
+            .map(|a| (a.name, a.source))
+            .collect();
+        concat_with_aux(&pairs, main)
     }
 
     /// `concat_main` using the demo's baked-in main source. Test
@@ -74,10 +71,32 @@ impl Demo {
     }
 }
 
+/// Free-function form of the aux concat. Used by the live UI's Run
+/// path to feed user-edited aux source through the same injection
+/// rules as the baked-in version. `aux` is `(filename, source)` in
+/// dependency order; `main` is the main source (typically
+/// `main.ml`).
+pub fn concat_with_aux(aux: &[(&str, &str)], main: &str) -> String {
+    if aux.is_empty() {
+        return main.to_string();
+    }
+    let mut out = String::new();
+    for (name, source) in aux {
+        out.push_str(&format!("let __module = \"{}\"\n", capitalize_stem(name)));
+        out.push_str(source);
+        if !source.ends_with('\n') {
+            out.push('\n');
+        }
+    }
+    out.push_str("let __module = \"Main\"\n");
+    out.push_str(main);
+    out
+}
+
 /// Strip a trailing `.ml` and capitalise the first byte. Mirrors the
 /// CLI's `run-ocaml.sh` rule: `math.ml` -> `Math`,
 /// `game_state.ml` -> `Game_state`.
-fn capitalize_stem(filename: &str) -> String {
+pub(crate) fn capitalize_stem(filename: &str) -> String {
     let stem = filename.strip_suffix(".ml").unwrap_or(filename);
     let mut chars = stem.chars();
     match chars.next() {

@@ -2,11 +2,13 @@ use gloo::timers::callback::Timeout;
 use web_sys::{Element, HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement, KeyboardEvent};
 use yew::prelude::*;
 
+pub mod components;
 pub mod config;
 pub mod demos;
 pub mod hardware;
 pub mod runner;
 
+use components::{ModuleEditor, ModuleFile};
 use demos::{DEMOS, DemoCategory, default_demo_index};
 use hardware::HardwarePanel;
 use runner::Session;
@@ -46,6 +48,8 @@ pub enum Msg {
     OpenHelp,
     CloseHelp,
     SetHelpTab(HelpTab),
+    AuxFileChanged(usize, String),
+    AuxFileToggleCollapse(usize),
 }
 
 pub struct App {
@@ -81,6 +85,11 @@ pub struct App {
     led_on: bool,
     help_open: bool,
     help_tab: HelpTab,
+    // Phase 2 multi-file: per-session edit buffers for the active
+    // demo's auxiliary_files. Hydrated from the demo on load_demo;
+    // mutated by ModuleEditor; concatenated into the source fed to
+    // Session at start_run time.
+    aux_edits: Vec<ModuleFile>,
 }
 
 impl App {
@@ -88,6 +97,15 @@ impl App {
         if let Some(demo) = DEMOS.get(idx) {
             self.selected = idx;
             self.source = demo.source.to_string();
+            self.aux_edits = demo
+                .auxiliary_files
+                .iter()
+                .map(|aux| ModuleFile {
+                    name: aux.name.to_string(),
+                    source: aux.source.to_string(),
+                    collapsed: false,
+                })
+                .collect();
             self.output.clear();
             self.status = "idle".into();
             self.error = false;
@@ -110,12 +128,16 @@ impl App {
             .unwrap_or(false);
         // Multi-file demos: concatenate aux files (each preceded by a
         // synthesized `let __module = "..."` directive) before the
-        // user-edited main source. Single-file demos pass through
-        // unchanged.
-        let full_source = DEMOS
-            .get(self.selected)
-            .map(|d| d.concat_main(&self.source))
-            .unwrap_or_else(|| self.source.clone());
+        // user-edited main source. Phase 2: aux file content comes
+        // from `self.aux_edits` (user-editable in the ModuleEditor),
+        // not from the demo's baked-in `auxiliary_files`. Single-file
+        // demos pass through unchanged because aux_edits is empty.
+        let aux_pairs: Vec<(&str, &str)> = self
+            .aux_edits
+            .iter()
+            .map(|m| (m.name.as_str(), m.source.as_str()))
+            .collect();
+        let full_source = demos::concat_with_aux(&aux_pairs, &self.source);
         self.session = Some(if interactive {
             Session::new_interactive(&full_source)
         } else {
@@ -159,6 +181,15 @@ impl Component for App {
     fn create(_ctx: &Context<Self>) -> Self {
         let idx = default_demo_index();
         let demo = &DEMOS[idx];
+        let aux_edits = demo
+            .auxiliary_files
+            .iter()
+            .map(|aux| ModuleFile {
+                name: aux.name.to_string(),
+                source: aux.source.to_string(),
+                collapsed: false,
+            })
+            .collect();
         Self {
             selected: idx,
             source: demo.source.to_string(),
@@ -182,6 +213,7 @@ impl Component for App {
             led_on: false,
             help_open: false,
             help_tab: HelpTab::UserGuide,
+            aux_edits,
         }
     }
 
@@ -432,6 +464,22 @@ impl Component for App {
                 self.help_tab = tab;
                 true
             }
+            Msg::AuxFileChanged(idx, source) => {
+                if let Some(file) = self.aux_edits.get_mut(idx) {
+                    file.source = source;
+                    true
+                } else {
+                    false
+                }
+            }
+            Msg::AuxFileToggleCollapse(idx) => {
+                if let Some(file) = self.aux_edits.get_mut(idx) {
+                    file.collapsed = !file.collapsed;
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -554,6 +602,12 @@ impl Component for App {
                         value={self.source.clone()}
                         oninput={on_src}
                         onkeydown={on_keydown.clone()}
+                    />
+                    <ModuleEditor
+                        files={self.aux_edits.clone()}
+                        on_change={ctx.link().callback(|(idx, source)| Msg::AuxFileChanged(idx, source))}
+                        on_toggle_collapse={ctx.link().callback(Msg::AuxFileToggleCollapse)}
+                        disabled={self.running}
                     />
                 </section>
                 <section class="panel panel-out">

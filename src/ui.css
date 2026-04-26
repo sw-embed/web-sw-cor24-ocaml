@@ -500,3 +500,62 @@ footer a:hover {
   color: var(--text);
 }
 
+/* ── Auxiliary module files (Phase 2 multi-file demos) ── */
+.aux-files-panel {
+  margin-top: 12px;
+}
+
+.aux-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aux-file {
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.aux-file-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.aux-collapse-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.7em;
+  padding: 0 4px;
+  transition: color 0.15s;
+}
+
+.aux-collapse-btn:hover {
+  color: var(--accent);
+}
+
+.aux-file-name {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.aux-file-textarea {
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid var(--panel-border);
+  min-height: 120px;
+}
+
+.aux-file-textarea:focus {
+  border-color: var(--accent);
+}
+

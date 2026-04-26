@@ -110,20 +110,31 @@ see one demo in the dropdown; the editor still shows just the main
 file. The auxiliary module sources are bundled but not exposed for
 editing.
 
-### Phase 2: ModuleEditor component (read + edit aux files)
+### Phase 2: ModuleEditor component (read + edit aux files) — SHIPPED
 
-Patterned directly after plsw's `MacroEditor`:
+Patterned after plsw's `MacroEditor`, trimmed to the read+edit slice.
 
-- New `src/components/module_editor.rs`. One collapsible cell per
-  `AuxFile`, filename header, OCaml-highlighted textarea (reuse
-  the highlighter from the main editor).
-- Wire it as a notebook cell between the source editor and the
-  output panel. No wizard rework -- the OCaml UI is currently flat,
-  not stepped, so the cell just appears below the main editor when
-  the active demo has `auxiliary_files.len() > 0`.
-- State: aux file edits live in component state (per-session), not
-  persisted. Rerunning the demo concatenates current edits, not the
-  original baked-in sources.
+- `src/components/module_editor.rs` ships `ModuleEditor` (function
+  component) plus `ModuleFile { name, source, collapsed }`. Props:
+  `files`, `on_change(idx, source)`, `on_toggle_collapse(idx)`,
+  `disabled`. No add/remove/upload (those are Phase 3).
+- Renders below the main source editor inside the existing
+  `panel-src` section, only when `aux_edits.len() > 0`. CSS lives
+  in `src/ui.css` under `/* Auxiliary module files */`.
+- State: `App.aux_edits: Vec<ModuleFile>` is hydrated from
+  `DEMOS[selected].auxiliary_files` on `load_demo` and on
+  `Component::create`. Edits flow through `Msg::AuxFileChanged(idx,
+  source)` and `Msg::AuxFileToggleCollapse(idx)`. No persistence
+  across reloads.
+- Run path: `start_run()` builds the source via
+  `demos::concat_with_aux(&aux_pairs, &self.source)` where
+  `aux_pairs` borrows from the live `aux_edits`, NOT from the
+  demo's baked-in `auxiliary_files`. So edits to either pane are
+  honoured.
+- Test: `tests/demos.rs::concat_with_aux_edited_runs_through_session`
+  feeds Session an edited math.ml (where `Math.add x y = x * y`) and
+  asserts the output reflects the edit, locking in the
+  edit-honouring contract.
 
 ### Phase 3: add / remove / upload aux files
 
@@ -148,9 +159,15 @@ without leaving the page.
 
 ## Concrete next-saga starting line
 
-1. Read `../web-sw-cor24-plsw/src/demos.rs` and
-   `src/components/macro_editor.rs` end-to-end.
-2. Land Phase 1 in one saga step (data model + runner + tests +
-   one multi-file demo, e.g. `modules-multifile` vendoring
-   `tests/{math,main}.ml` from the CLI repo).
-3. Phase 2 and Phase 3 each get their own saga.
+Phases 1 and 2 are shipped (v0.2.0 + post-release). Phase 3
+remains:
+
+1. Re-read `../web-sw-cor24-plsw/src/components/macro_editor.rs`
+   for the add/remove/upload pattern (the trimmed Phase 2 version
+   is in `src/components/module_editor.rs`).
+2. Wire `Msg::AuxFileAdd`, `Msg::AuxFileRemove(idx)`,
+   `Msg::AuxFileRename(idx, String)`,
+   `Msg::AuxFileUpload(name, source)` -- the matching
+   `MacroEditor` props are already named symmetrically.
+3. Decide on persistence story (probably localStorage keyed by
+   demo name) and whether reordering aux files is in scope.
