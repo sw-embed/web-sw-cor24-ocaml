@@ -1,0 +1,11 @@
+number = 2
+slug = "rebuild-pages"
+status = "pending"
+description = """
+# Rebuild pages with refreshed interpreter and 7 new demos
+
+The previous step..."""
+role = "legacy"
+context_files = []
+created_at = "2026-04-25T21:04:50"
+commits = []
