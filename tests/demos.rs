@@ -168,6 +168,63 @@ fn concat_with_aux_edited_runs_through_session() {
 }
 
 #[test]
+fn text_adventure_seed_prints_cave_description_before_input_prompt() {
+    // The live App waits for PC stability (3 consecutive samples
+    // within 64 bytes, signalling the read_line UART poll loop)
+    // before declaring "awaiting input". Simulate that here and
+    // confirm the cleaned output contains the cave description by
+    // the time stability is reached.
+    let demo = DEMOS
+        .iter()
+        .find(|d| d.name == "text-adventure")
+        .expect("text-adventure demo not found");
+    let full = demo.full_source();
+    let mut s = Session::new_interactive(&full);
+
+    const SAMPLES_REQUIRED: usize = 3;
+    const PC_POLL_WINDOW: u32 = 16;
+    let mut pc_samples: Vec<u32> = Vec::new();
+    let mut settled = false;
+    for _ in 0..MAX_TICKS {
+        s.tick();
+        if s.is_done() {
+            break;
+        }
+        if !s.is_awaiting_input() {
+            pc_samples.clear();
+            continue;
+        }
+        let pc = s.pc();
+        pc_samples.push(pc);
+        if pc_samples.len() > SAMPLES_REQUIRED {
+            pc_samples.remove(0);
+        }
+        if pc_samples.len() == SAMPLES_REQUIRED {
+            let min = *pc_samples.iter().min().unwrap();
+            let max = *pc_samples.iter().max().unwrap();
+            if max - min < PC_POLL_WINDOW {
+                settled = true;
+                break;
+            }
+        }
+    }
+    assert!(
+        settled,
+        "PC never stabilised at the read_line poll loop\n  cleaned: {:?}",
+        s.clean_output()
+    );
+    let cleaned = s.clean_output();
+    assert!(
+        cleaned.contains("=== tiny adventure ==="),
+        "expected banner '=== tiny adventure ===' in seed output\n  cleaned: {cleaned:?}"
+    );
+    assert!(
+        cleaned.contains("Damp cave. A lamp lies here. Exits: n."),
+        "expected initial cave description in seed output\n  cleaned: {cleaned:?}"
+    );
+}
+
+#[test]
 fn text_adventure_take_lamp_only_once() {
     // Regression test for the take bug: in the buggy version,
     // each `take` in the Cave produced "you take the lamp" again

@@ -60,6 +60,23 @@ print_int 42
 
 ---
 
+## hello-world
+
+The traditional "Hello, World!" -- string variant of `hello`.
+`print_endline` writes the string and a newline.
+
+```ocaml
+print_endline "Hello, World!"
+```
+
+**Expected output:**
+
+```
+Hello, World!
+```
+
+---
+
 ## factorial
 
 Recursive `let rec` with an `if`/`else` base case. Computes 5! = 120.

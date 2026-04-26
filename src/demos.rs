@@ -304,6 +304,14 @@ pub static DEMOS: &[Demo] = &[
         category: DemoCategory::Standard,
     },
     Demo {
+        name: "hello-world",
+        source: include_str!("../examples/hello-world.ml"),
+        interactive: false,
+        description: "Print the string `\"Hello, World!\"` via `print_endline`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Standard,
+    },
+    Demo {
         name: "higher-order-lists",
         source: include_str!("../examples/higher-order-lists.ml"),
         interactive: false,

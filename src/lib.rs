@@ -319,7 +319,16 @@ impl Component for App {
                     // fall within PC_POLL_WINDOW of each other, we
                     // trust the interp is truly idle.
                     const SAMPLES_REQUIRED: usize = 3;
-                    const PC_POLL_WINDOW: u32 = 64;
+                    // Tightened from 64 to 16 bytes: the actual
+                    // read_line UART RX poll loop is a few-byte
+                    // fetch+branch sequence, well within 16. The
+                    // parser's warm-up (visible during long demos
+                    // like text-adventure) sits in a wider PVM
+                    // helper window (~30 bytes) which would
+                    // false-positive at 64 -- App stops ticking,
+                    // seed never finishes printing, user sees the
+                    // input prompt with no preceding output.
+                    const PC_POLL_WINDOW: u32 = 16;
                     let pc = session.pc();
                     self.pc_samples.push(pc);
                     if self.pc_samples.len() > SAMPLES_REQUIRED {
