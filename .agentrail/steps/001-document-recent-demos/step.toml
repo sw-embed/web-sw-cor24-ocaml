@@ -1,6 +1,6 @@
 number = 1
 slug = "document-recent-demos"
-status = "pending"
+status = "completed"
 description = """
 # Refresh docs/demos.md with the 8 missing demo entries
 
@@ -8,4 +8,5 @@ description = """
 role = "production"
 context_files = []
 created_at = "2026-04-26T07:20:15"
-commits = []
+completed_at = "2026-04-26T08:03:05"
+commits = ["b6f2ff70e0c6dafd4c2ead8b12aa009613561975"]
