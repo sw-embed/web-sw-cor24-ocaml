@@ -1,6 +1,6 @@
-name = "add-guess-resync-adventure"
-status = "completed"
-current_step = 2
-created_at = "2026-04-17T12:43:08"
+name = "refresh-interp-add-seven-demos"
+status = "active"
+current_step = 1
+created_at = "2026-04-25T21:00:17"
 plan_file = ".agentrail/plan.md"
 retroactive = false

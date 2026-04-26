@@ -160,10 +160,34 @@ pub static DEMOS: &[Demo] = &[
         description: "Semicolon-sequenced expressions evaluated left-to-right.",
     },
     Demo {
+        name: "string-conversion",
+        source: include_str!("../examples/string-conversion.ml"),
+        interactive: false,
+        description: "`string_of_int` / `int_of_string` round-trips, including malformed inputs.",
+    },
+    Demo {
+        name: "string-equality",
+        source: include_str!("../examples/string-equality.ml"),
+        interactive: false,
+        description: "Structural `=` and `<>` on strings, including in `if` conditions.",
+    },
+    Demo {
+        name: "string-escapes",
+        source: include_str!("../examples/string-escapes.ml"),
+        interactive: false,
+        description: "Escape sequences in string literals: `\\n`, `\\t`, `\\\\`, `\\\"`.",
+    },
+    Demo {
         name: "strings",
         source: include_str!("../examples/strings.ml"),
         interactive: false,
         description: "String literals, `^` concatenation, `print_endline`, `String.length`.",
+    },
+    Demo {
+        name: "tco-countdown",
+        source: include_str!("../examples/tco-countdown.ml"),
+        interactive: false,
+        description: "Tail-call optimisation: count down from 100 without growing the stack.",
     },
     Demo {
         name: "text-adventure",
@@ -171,6 +195,24 @@ pub static DEMOS: &[Demo] = &[
         interactive: true,
         description: "Interactive text adventure: navigate rooms, pick up items. \
                       Commands: look, inventory, take, n/s/e/w, quit.",
+    },
+    Demo {
+        name: "toplevel-let",
+        source: include_str!("../examples/toplevel-let.ml"),
+        interactive: false,
+        description: "Top-level `let` bindings, recursive `let rec`, tuple destructuring, `let () = ...`.",
+    },
+    Demo {
+        name: "tuple-arity",
+        source: include_str!("../examples/tuple-arity.ml"),
+        interactive: false,
+        description: "Pattern matching against 3- and 4-tuples with wildcards.",
+    },
+    Demo {
+        name: "variants-with-payload",
+        source: include_str!("../examples/variants-with-payload.ml"),
+        interactive: false,
+        description: "Variant constructors carrying payloads (`TInt of int`, `TIdent of string`) dispatched via `match`.",
     },
     Demo {
         name: "when-guards",

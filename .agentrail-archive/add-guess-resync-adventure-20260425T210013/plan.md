@@ -1,0 +1,1 @@
+Add demo_guess as 'guess' and re-sync demo_adventure into the web UI demos list, alphabetically. Preview via serve.sh, then commit and push.

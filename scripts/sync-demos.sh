@@ -49,6 +49,13 @@ MAPPING=(
     "demo_adventure:text-adventure"
     "demo_echo_loop:echo-loop"
     "demo_guess:guess"
+    "eval_string_conversion:string-conversion"
+    "eval_string_eq:string-equality"
+    "eval_string_escapes:string-escapes"
+    "demo_tco_countdown:tco-countdown"
+    "eval_toplevel_let:toplevel-let"
+    "eval_tuple_arity:tuple-arity"
+    "eval_user_variants:variants-with-payload"
 )
 
 # Demos whose source is one logical expression that spans multiple
