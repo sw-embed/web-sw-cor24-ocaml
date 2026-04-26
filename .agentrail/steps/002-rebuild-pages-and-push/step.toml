@@ -1,0 +1,11 @@
+number = 2
+slug = "rebuild-pages-and-push"
+status = "pending"
+description = """
+# Rebuild pages with annotated modules demo and push
+
+The previous step (001-..."""
+role = "legacy"
+context_files = []
+created_at = "2026-04-25T21:35:31"
+commits = []
