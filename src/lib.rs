@@ -7,7 +7,7 @@ pub mod demos;
 pub mod hardware;
 pub mod runner;
 
-use demos::{DEMOS, default_demo_index};
+use demos::{DEMOS, DemoCategory, default_demo_index};
 use hardware::HardwarePanel;
 use runner::Session;
 
@@ -514,11 +514,24 @@ impl Component for App {
                     <h1>{ "web-sw-cor24-ocaml" }</h1>
                     <div class="controls">
                         <select onchange={on_demo} disabled={self.running}>
-                            { for DEMOS.iter().enumerate().map(|(i, d)| html! {
-                                <option value={i.to_string()} selected={i == self.selected}>
-                                    { d.name }
-                                </option>
-                            })}
+                            <optgroup label="Standard demos">
+                                { for DEMOS.iter().enumerate()
+                                    .filter(|(_, d)| d.category == DemoCategory::Standard)
+                                    .map(|(i, d)| html! {
+                                        <option value={i.to_string()} selected={i == self.selected}>
+                                            { d.name }
+                                        </option>
+                                    })}
+                            </optgroup>
+                            <optgroup label="Minimal examples">
+                                { for DEMOS.iter().enumerate()
+                                    .filter(|(_, d)| d.category == DemoCategory::Minimal)
+                                    .map(|(i, d)| html! {
+                                        <option value={i.to_string()} selected={i == self.selected}>
+                                            { d.name }
+                                        </option>
+                                    })}
+                            </optgroup>
                         </select>
                         { run_button }
                         <button class="secondary" onclick={on_reset} disabled={self.running}>{ "Reset" }</button>

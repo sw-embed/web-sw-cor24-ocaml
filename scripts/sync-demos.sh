@@ -123,6 +123,45 @@ for entry in "${MAPPING[@]}"; do
     fi
 done
 
+# "Minimal examples" tier: 16 canonical_*.ml one-liners from the
+# CLI's tests/. Each is a single-line demonstration of one feature
+# (literal, lambda app, list-map, match, etc.). Surfaced in the
+# dropdown under a separate <optgroup label="Minimal examples">
+# rather than interleaved with the standard catalog. CLI test name
+# `canonical_<feature>` -> web demo `canonical-<feature>`.
+MINIMAL_MAPPING=(
+    "canonical_arith:canonical-arith"
+    "canonical_fact:canonical-fact"
+    "canonical_fib:canonical-fib"
+    "canonical_int_literal:canonical-int-literal"
+    "canonical_lambda_app:canonical-lambda-app"
+    "canonical_let_in:canonical-let-in"
+    "canonical_list_filter:canonical-list-filter"
+    "canonical_list_fold_left:canonical-list-fold-left"
+    "canonical_list_map:canonical-list-map"
+    "canonical_match_int:canonical-match-int"
+    "canonical_print_length:canonical-print-length"
+    "canonical_safe_div:canonical-safe-div"
+    "canonical_some_42:canonical-some-42"
+    "canonical_string_concat:canonical-string-concat"
+    "canonical_swap:canonical-swap"
+    "canonical_when_guard:canonical-when-guard"
+)
+echo ""
+echo "Syncing minimal examples from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
+for entry in "${MINIMAL_MAPPING[@]}"; do
+    src="${entry%%:*}"
+    dst="${entry##*:}"
+    src_path="$CLI_DIR/tests/$src.ml"
+    dst_path="$EXAMPLES_DIR/$dst.ml"
+    if [ ! -f "$src_path" ]; then
+        echo "  warn: $src_path missing, skipping" >&2
+        continue
+    fi
+    cp "$src_path" "$dst_path"
+    printf "  %-30s <- tests/%s.ml\n" "$dst.ml" "$src"
+done
+
 # Multi-file demos (Phase 1 of docs/multiple-file-demos-plan.md).
 # Each entry is "main_cli:aux_cli,aux_cli,...:web_dir". The script
 # copies main_cli to <web_dir>/main.ml and each aux_cli to

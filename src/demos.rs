@@ -23,12 +23,22 @@ pub struct AuxFile {
     pub source: &'static str,
 }
 
+/// Dropdown grouping. Standard demos are the substantive 36-entry
+/// catalog; Minimal demos are the 16 canonical_*.ml one-liners
+/// surfaced under a separate <optgroup>.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum DemoCategory {
+    Standard,
+    Minimal,
+}
+
 pub struct Demo {
     pub name: &'static str,
     pub source: &'static str,
     pub interactive: bool,
     pub description: &'static str,
     pub auxiliary_files: &'static [AuxFile],
+    pub category: DemoCategory,
 }
 
 impl Demo {
@@ -81,11 +91,140 @@ fn capitalize_stem(filename: &str) -> String {
 // ordering is independent of which demo is the default.
 pub static DEMOS: &[Demo] = &[
     Demo {
+        name: "canonical-arith",
+        source: include_str!("../examples/canonical-arith.ml"),
+        interactive: false,
+        description: "Operator precedence: `1 + 2 * 3` evaluates `*` before `+` -> 7.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-fact",
+        source: include_str!("../examples/canonical-fact.ml"),
+        interactive: false,
+        description: "Recursive factorial via `let rec` (5! = 120).",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-fib",
+        source: include_str!("../examples/canonical-fib.ml"),
+        interactive: false,
+        description: "Recursive Fibonacci, prints `fib 10` = 55.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-int-literal",
+        source: include_str!("../examples/canonical-int-literal.ml"),
+        interactive: false,
+        description: "The smallest possible expression: an integer literal `42`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-lambda-app",
+        source: include_str!("../examples/canonical-lambda-app.ml"),
+        interactive: false,
+        description: "Apply an inline lambda: `(fun x -> x * 2) 5` -> 10.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-let-in",
+        source: include_str!("../examples/canonical-let-in.ml"),
+        interactive: false,
+        description: "Local binding via `let ... in`: `let x = 10 in x * x` -> 100.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-list-filter",
+        source: include_str!("../examples/canonical-list-filter.ml"),
+        interactive: false,
+        description: "`List.filter` with an inline predicate (keep evens).",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-list-fold-left",
+        source: include_str!("../examples/canonical-list-fold-left.ml"),
+        interactive: false,
+        description: "`List.fold_left` summing `[1;2;3;4]` -> 10.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-list-map",
+        source: include_str!("../examples/canonical-list-map.ml"),
+        interactive: false,
+        description: "`List.map` doubling `[1;2;3]` -> `[2; 4; 6]`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-match-int",
+        source: include_str!("../examples/canonical-match-int.ml"),
+        interactive: false,
+        description: "Integer `match` with literal arms and `_` fallthrough.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-print-length",
+        source: include_str!("../examples/canonical-print-length.ml"),
+        interactive: false,
+        description: "Compose `print_endline`, `string_of_int`, `List.length` to print `3`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-safe-div",
+        source: include_str!("../examples/canonical-safe-div.ml"),
+        interactive: false,
+        description: "Option-returning division: `safe_div 10 2` -> `Some 5`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-some-42",
+        source: include_str!("../examples/canonical-some-42.ml"),
+        interactive: false,
+        description: "Constructing `Some 42` -- a one-line option intro.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-string-concat",
+        source: include_str!("../examples/canonical-string-concat.ml"),
+        interactive: false,
+        description: "String concatenation with `^`: `\"OCaml\" ^ \" rocks\"`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-swap",
+        source: include_str!("../examples/canonical-swap.ml"),
+        interactive: false,
+        description: "Tuple-destructuring function arg: `let swap (x, y) = (y, x)`.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
+        name: "canonical-when-guard",
+        source: include_str!("../examples/canonical-when-guard.ml"),
+        interactive: false,
+        description: "`match ... when <guard>` arm: minimal `abs` implementation.",
+        auxiliary_files: &[],
+        category: DemoCategory::Minimal,
+    },
+    Demo {
         name: "echo-loop",
         source: include_str!("../examples/echo-loop.ml"),
         interactive: true,
         description: "Type any text and it's echoed back. Type `quit` to exit.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "factorial",
@@ -93,6 +232,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Recursive factorial via `let rec`; computes 5!.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "function-form-let",
@@ -100,6 +240,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Sugared `let f x y = body` form (curried function definitions).",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "function-keyword",
@@ -107,6 +248,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "The `function` keyword: shorthand for `fun x -> match x with ...`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "function-pattern-args",
@@ -115,6 +257,7 @@ pub static DEMOS: &[Demo] = &[
         description:
             "Destructuring patterns directly in function arguments: `let swap (x, y) = ...`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "functions",
@@ -122,6 +265,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "First-class functions and `let` bindings.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "guess",
@@ -130,6 +274,7 @@ pub static DEMOS: &[Demo] = &[
         description: "Number-guessing game: the target is 42. Enter an integer; \
                       the demo replies `too low`, `too high`, or `correct!`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "hello",
@@ -137,6 +282,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Smallest possible program: print the integer 42.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "higher-order-lists",
@@ -145,6 +291,7 @@ pub static DEMOS: &[Demo] = &[
         description:
             "`List.map`, `List.filter`, `List.fold_left`, `List.iter` with inline lambdas.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "led-blink",
@@ -152,6 +299,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Drive the COR24 LED via `led_on` / `led_off`. Browser stubs the LED.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "led-toggle",
@@ -159,6 +307,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Read the COR24 switch and reflect it on the LED.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "let-destructure",
@@ -166,6 +315,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Destructuring `let (a, b) = ...`, `let h :: t = ...`, and friends.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "list-module",
@@ -173,6 +323,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "`List.length`, `List.rev`, qualified-name lookups.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "lists",
@@ -180,6 +331,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "List literals, cons, head/tail, is_empty.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "lists-pairs-demo",
@@ -187,6 +339,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Sum, length, map, swap, countdown — lists + pairs in one program.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "modules",
@@ -199,6 +352,7 @@ pub static DEMOS: &[Demo] = &[
                       trailing `EVAL ERROR` is the punchline; the language has no \
                       try/catch, the REPL just resets per line.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "modules-multifile",
@@ -214,6 +368,7 @@ pub static DEMOS: &[Demo] = &[
             name: "math.ml",
             source: include_str!("../examples/modules-multifile/math.ml"),
         }],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "multi-arg",
@@ -221,6 +376,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Multi-argument curried function via `fun x y -> ...`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "named-adts",
@@ -228,6 +384,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Sum types via `type T = C1 | C2 | ...` and `match` expressions.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "options",
@@ -235,6 +392,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "The built-in `option` type: `None` and `Some x`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "pairs",
@@ -242,6 +400,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Tuple construction with `fst` / `snd` accessors.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "patterns",
@@ -249,6 +408,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Pattern matching across lists, tuples, options, and literals.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "print",
@@ -256,6 +416,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "`print_int` and `putc` writing through the UART.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "repl-session",
@@ -265,6 +426,7 @@ pub static DEMOS: &[Demo] = &[
                       Each input must be a complete expression: `let x = 42 in x`, not bare \
                       `let x = 42`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "sequencing",
@@ -272,6 +434,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Semicolon-sequenced expressions evaluated left-to-right.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "string-conversion",
@@ -279,6 +442,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "`string_of_int` / `int_of_string` round-trips, including malformed inputs.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "string-equality",
@@ -286,6 +450,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Structural `=` and `<>` on strings, including in `if` conditions.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "string-escapes",
@@ -293,6 +458,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Escape sequences in string literals: `\\n`, `\\t`, `\\\\`, `\\\"`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "strings",
@@ -300,6 +466,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "String literals, `^` concatenation, `print_endline`, `String.length`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "tco-countdown",
@@ -307,6 +474,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Tail-call optimisation: count down from 100 without growing the stack.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "text-adventure",
@@ -315,6 +483,7 @@ pub static DEMOS: &[Demo] = &[
         description: "Interactive text adventure: navigate rooms, pick up items. \
                       Commands: look, inventory, take, n/s/e/w, quit.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "toplevel-let",
@@ -322,6 +491,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Top-level `let` bindings, recursive `let rec`, tuple destructuring, `let () = ...`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "tuple-arity",
@@ -329,6 +499,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Pattern matching against 3- and 4-tuples with wildcards.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "variants-with-payload",
@@ -336,6 +507,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "Variant constructors carrying payloads (`TInt of int`, `TIdent of string`) dispatched via `match`.",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
     Demo {
         name: "when-guards",
@@ -343,6 +515,7 @@ pub static DEMOS: &[Demo] = &[
         interactive: false,
         description: "`match ... when <guard>` clauses for conditional pattern arms (abs, sign).",
         auxiliary_files: &[],
+        category: DemoCategory::Standard,
     },
 ];
 
@@ -366,6 +539,40 @@ mod tests {
         let len = names.len();
         names.dedup();
         assert_eq!(names.len(), len, "duplicate demo names");
+    }
+
+    #[test]
+    fn minimal_examples_present_and_well_formed() {
+        // The "Minimal examples" tier should have all 16 canonical
+        // demos and they should all start with the `canonical-`
+        // prefix so the dropdown grouping stays predictable.
+        let minimals: Vec<_> = DEMOS
+            .iter()
+            .filter(|d| d.category == DemoCategory::Minimal)
+            .collect();
+        assert_eq!(
+            minimals.len(),
+            16,
+            "expected 16 minimal-category demos, got {}",
+            minimals.len()
+        );
+        for demo in &minimals {
+            assert!(
+                demo.name.starts_with("canonical-"),
+                "minimal demo '{}' should have canonical- prefix",
+                demo.name
+            );
+            assert!(
+                !demo.interactive,
+                "minimal demo '{}' should be non-interactive",
+                demo.name
+            );
+            assert!(
+                demo.auxiliary_files.is_empty(),
+                "minimal demo '{}' should not carry auxiliary files",
+                demo.name
+            );
+        }
     }
 
     #[test]

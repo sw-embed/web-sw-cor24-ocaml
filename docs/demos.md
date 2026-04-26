@@ -9,6 +9,39 @@ OCaml integer-subset semantics: every top-level expression's value is
 echoed in the REPL, and `print_int` writes a decimal representation
 without a trailing newline.
 
+The dropdown groups demos under two `<optgroup>` labels:
+**Standard demos** for the substantive 36-entry catalog, and
+**Minimal examples** for the 16 `canonical-*` one-liners that
+demonstrate single language features in isolation. Both are listed
+alphabetically below.
+
+---
+
+## Minimal examples
+
+One-line demonstrations of single features, vendored from
+`tests/canonical_*.ml` in the CLI repo. Useful for quick reference;
+see the corresponding Standard demo for richer coverage.
+
+| Demo | Source | Output |
+|---|---|---|
+| `canonical-arith` | `1 + 2 * 3` | `7` |
+| `canonical-fact` | `let rec fact n = if n = 0 then 1 else n * fact (n - 1) in fact 5` | `120` |
+| `canonical-fib` | `let rec fib n = if n < 2 then n else fib (n-1) + fib (n-2) in print_int (fib 10)` | `55` |
+| `canonical-int-literal` | `42` | `42` |
+| `canonical-lambda-app` | `(fun x -> x * 2) 5` | `10` |
+| `canonical-let-in` | `let x = 10 in x * x` | `100` |
+| `canonical-list-filter` | `List.filter (fun x -> x mod 2 = 0) [1;2;3;4]` | `[2; 4]` |
+| `canonical-list-fold-left` | `List.fold_left (fun a b -> a + b) 0 [1;2;3;4]` | `10` |
+| `canonical-list-map` | `List.map (fun x -> x * 2) [1;2;3]` | `[2; 4; 6]` |
+| `canonical-match-int` | `match 3 with 1 -> "one" \| 2 -> "two" \| _ -> "many"` | `"many"` |
+| `canonical-print-length` | `print_endline (string_of_int (List.length [1;2;3]))` | `3` |
+| `canonical-safe-div` | `let safe_div x y = if y = 0 then None else Some (x / y) in safe_div 10 2` | `Some 5` |
+| `canonical-some-42` | `Some 42` | `Some 42` |
+| `canonical-string-concat` | `"OCaml" ^ " rocks"` | `"OCaml rocks"` |
+| `canonical-swap` | `let swap (x, y) = (y, x) in swap (1, 2)` | `(2, 1)` |
+| `canonical-when-guard` | `let abs x = match x with n when n < 0 -> -n \| n -> n in abs (-7)` | `7` |
+
 ---
 
 ## hello
