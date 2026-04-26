@@ -166,6 +166,47 @@ false
 
 ---
 
+## modules
+
+User-defined module namespaces via the reserved `let __module = "..."`
+directive. Defines `Math.add` / `Math.double` inside module `Math`,
+switches to module `Main`, then dispatches by qualified name. The
+trailing line is intentional: from `Main`, an unqualified `add 1 2`
+fails because `add` lives in `Math` -- the `EVAL ERROR` is the
+namespace-isolation punchline. There is no language-level try/catch;
+the REPL resets `eval_error` per line and continues, which is how
+the corrective `Math.add 1 2` and the failing `add 1 2` can both
+run.
+
+The web variant diverges from the CLI source
+(`tests/eval_module_namespace_directive.ml`): inline `(* ... *)`
+comments and a corrective qualified call were added so the trailing
+error reads as the educational climax rather than a bug.
+`scripts/sync-demos.sh` lists `modules` under `LOCAL_OVERRIDE` so
+re-syncing won't clobber it.
+
+```ocaml
+let __module = "Math"        (* enter module Math *)
+let add x y = x + y          (* defines Math.add *)
+let double x = add x x       (* Math.double; unqualified add resolves within Math *)
+let __module = "Main"        (* switch to Main; Math's bindings now require qualification *)
+Math.add 2 3                 (* qualified dispatch into Math --> 5 *)
+Math.double 9                (* qualified --> 18 *)
+Math.add 1 2                 (* the right way: qualify into Math --> 3 *)
+add 1 2                      (* the wrong way: unqualified add lives in Math, not Main -- EVAL ERROR expected *)
+```
+
+**Expected output:**
+
+```
+5
+18
+3
+EVAL ERROR
+```
+
+---
+
 ## higher-order-lists
 
 The classic functional-programming trio over the built-in `List`
@@ -423,6 +464,105 @@ Hello, World!
 
 ---
 
+## string-conversion
+
+`string_of_int` and `int_of_string` round-trips. The REPL echoes
+each value: integers print as decimals, strings print quoted.
+`int_of_string` is lenient -- malformed inputs like `"abc"` and
+the empty string return `0` rather than raising.
+
+```ocaml
+string_of_int 42
+string_of_int 0
+string_of_int (-7)
+string_of_int 123456
+int_of_string "100"
+int_of_string "-42"
+int_of_string "0"
+print_endline (string_of_int (List.length [1;2;3]))
+string_of_int (List.fold_left (fun a x -> a + x) 0 [1;2;3;4;5])
+int_of_string (string_of_int 789)
+int_of_string "abc"
+int_of_string ""
+```
+
+**Expected output:**
+
+```
+"42"
+"0"
+"-7"
+"123456"
+100
+-42
+0
+3
+"15"
+789
+0
+0
+```
+
+---
+
+## string-equality
+
+Structural `=` and `<>` on strings. `=` is true iff the strings
+have identical bytes; `<>` is its negation. Both work inside `if`
+conditions, which is the natural use in interactive demos that
+read commands.
+
+```ocaml
+"abc" = "abc"
+"abc" = "abd"
+"abc" = "abcd"
+"" = ""
+"hello" <> "world"
+"same" <> "same"
+if "quit" = "quit" then print_endline "yes" else print_endline "no"
+if "quit" = "keep" then print_endline "yes" else print_endline "no"
+```
+
+**Expected output:**
+
+```
+true
+false
+false
+true
+true
+false
+yes
+no
+```
+
+---
+
+## string-escapes
+
+Escape sequences in string literals. The interpreter recognises
+`\n` (newline), `\t` (tab), `\\` (backslash), and `\"` (double
+quote) inside `"..."` strings. `String.length` counts bytes after
+escapes are resolved, so `"a\nb"` has length 3.
+
+```ocaml
+let s = "line1\nline2" in print_endline s
+let s = "tab\tbackslash\\quote\"" in print_endline s
+String.length "a\nb"
+```
+
+**Expected output:** (the embedded `\n` becomes a real newline, the
+`\t` becomes a tab character)
+
+```
+line1
+line2
+tab	backslash\quote"
+3
+```
+
+---
+
 ## text-adventure
 
 Marked `interactive: true`. A tiny text adventure demonstrating
@@ -470,6 +610,60 @@ You step into daylight. The end!
 
 ---
 
+## echo-loop
+
+Marked `interactive: true`. Reads a line, prints it back, repeats.
+Type `quit` to exit cleanly via `exit 0`. Originally added to debug
+`read_line` buffering; remains as the simplest possible
+interactive demo and a smoke test for the input-row plumbing.
+
+```ocaml
+let rec loop = fun u -> let s = read_line () in if s = "quit" then (print_endline "bye"; exit 0) else (print_endline s; loop ()) in loop ()
+```
+
+**Expected interaction:**
+
+```
+hello
+hello
+ocaml is fun
+ocaml is fun
+quit
+bye
+```
+
+---
+
+## guess
+
+Marked `interactive: true`. Number-guessing game with target 42.
+`int_of_string` (lenient) parses the user's input; the loop
+replies `too low`, `too high`, or `correct!` and exits via
+`exit 0`.
+
+The web variant of this demo is hand-edited (`LOCAL_OVERRIDE`)
+because the CLI's branching version overflows the browser stack
+on the losing path -- there's no Ctrl-C in the browser to abort
+a runaway recursion.
+
+```ocaml
+let rec loop = fun u -> let g = int_of_string (read_line ()) in if g = 42 then (print_endline "correct!"; exit 0) else if g < 42 then (print_endline "too low"; loop ()) else (print_endline "too high"; loop ()) in (print_endline "Guess a number 1..100."; loop ())
+```
+
+**Expected interaction:**
+
+```
+Guess a number 1..100.
+50
+too high
+30
+too low
+42
+correct!
+```
+
+---
+
 ## named-adts
 
 Define a sum type with `type T = C1 | C2 | ...`, then construct
@@ -501,6 +695,41 @@ Blue
 3
 "blue"
 10
+```
+
+---
+
+## variants-with-payload
+
+Variant constructors that carry payloads of different types
+(`TInt of int`, `TIdent of string`) alongside nullary ones
+(`TLArrow`, `TEOF`). `match` dispatches by constructor and binds
+the payload. The bare `TInt 7` line is variant constructor
+application as an expression -- the REPL echoes the constructed
+value.
+
+```ocaml
+type token = TInt of int | TIdent of string | TLArrow | TEOF
+let dump tok = match tok with TInt n -> string_of_int n | TIdent s -> s | TLArrow -> "<-" | TEOF -> "EOF"
+let _ = print_endline (dump (TInt 42))
+let _ = print_endline (dump (TIdent "abc"))
+let _ = print_endline (dump TLArrow)
+let _ = print_endline (dump TEOF)
+TInt 7
+type color = Red | Green | Blue
+let color_name c = match c with Red -> "red" | Green -> "green" | Blue -> "blue"
+let _ = print_endline (color_name Green)
+```
+
+**Expected output:**
+
+```
+42
+abc
+<-
+EOF
+TInt 7
+green
 ```
 
 ---
@@ -568,6 +797,31 @@ None
 
 ---
 
+## tuple-arity
+
+Pattern matching against tuples of different arities (3-tuples and
+4-tuples) with literal subpatterns and wildcards. Each `match` arm
+must match the same arity as the subject. The bare `(1, 2, 3)`
+is a 3-tuple constructor whose value the REPL echoes.
+
+```ocaml
+let t = (1, 42, "hello") in match t with (0, _, s) -> print_endline ("IDENT " ^ s) | (1, n, _) -> print_endline ("INT " ^ string_of_int n) | (_, _, _) -> print_endline "OTHER"
+let q = (1, 2, 3, 4) in match q with (1, _, 3, n) -> print_int n | (_, _, _, _) -> print_int 0
+(1, 2, 3)
+match (0, "name", 9) with (0, s, _) -> print_endline s | (_, _, _) -> print_endline "miss"
+```
+
+**Expected output:**
+
+```
+INT 42
+4
+(1, 2, 3)
+name
+```
+
+---
+
 ## when-guards
 
 `match` arms can be qualified with a `when <bool-expr>` guard, so
@@ -621,6 +875,72 @@ let (x, [a; b]) = (1, [2; 3]) in x + a + b
 60
 100
 6
+```
+
+---
+
+## toplevel-let
+
+Top-level `let` bindings -- the form without a trailing `in`. The
+binding lives until the next `let __module = ...` switch or end
+of program. Demonstrated with: a simple lambda binding, a
+sugared multi-arg function, `let rec`, tuple destructuring on the
+LHS, and the unit-pattern shorthand `let () = ...` for running an
+expression purely for its side effect. Top-level lets evaluate
+to unit and the REPL emits a blank line for them; `clean_output`
+strips those, so only the `print_int` / `print_endline` calls
+inside each binding show in the panel.
+
+```ocaml
+let greet = fun name -> print_endline ("hello, " ^ name)
+let _ = greet "world"
+let _ = greet "tuplet"
+let add x y = x + y
+let _ = print_int (add 20 22)
+let rec fact n = if n = 0 then 1 else n * fact (n - 1)
+let _ = print_int (fact 5)
+let (a, b) = (3, 4)
+let _ = print_int (a + b)
+let () = print_endline "done"
+```
+
+**Expected output:**
+
+```
+hello, world
+hello, tuplet
+42
+120
+7
+done
+```
+
+---
+
+## tco-countdown
+
+Tail-call optimisation showcase. `count n` recurses until `n = 0`,
+printing each integer with a trailing newline (the next REPL line
+emits one) before the recursive call. The recursion is in tail
+position -- without TCO this would overflow the call stack at
+~100 frames. The vendored interpreter implements TCO in
+`eval_expr`, so the demo runs to completion cleanly from 100
+down to 1, then prints `done`.
+
+```ocaml
+let rec count = fun n -> if n = 0 then print_endline "done" else (print_int n; count (n - 1)) in count 100
+```
+
+**Expected output:** (101 lines total -- elided here for brevity)
+
+```
+100
+99
+98
+...
+2
+1
+done
 ```
 
 ---
