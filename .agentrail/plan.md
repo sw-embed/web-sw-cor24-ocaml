@@ -1,44 +1,36 @@
-# Add modules demo + document multi-file UI plan
+# Annotate modules demo + corrective line
 
 ## Goal
 
-Surface OCaml's new module-namespace feature in the web UI as a
-single-file demo (`modules`), and capture in
-`docs/multiple-file-demos-plan.md` the design for upgrading the UI to
-the multi-file workflow modeled on `web-sw-cor24-plsw` (one main +
-zero-to-many auxiliary files per demo).
+Make the `modules` demo's intentional namespace-isolation failure
+read as an educational climax rather than a bug. The CLI test
+source (`tests/eval_module_namespace_directive.ml`) ends on a bare
+`add 1 2 -> EVAL ERROR` with no context. Hand-edit the web demo
+(via LOCAL_OVERRIDE) to add inline `(* ... *)` comments framing
+each line plus a corrective qualified call before the deliberate
+failure.
 
 ## Steps
 
-### 001-add-modules-demo-and-write-plan
+### 001-annotate-modules-demo
 
-- Extend MAPPING in `scripts/sync-demos.sh` with one entry:
-    eval_module_namespace_directive -> modules
-- Run `./scripts/sync-demos.sh` to vendor `examples/modules.ml`.
-- Add an alphabetised entry to `DEMOS` in `src/demos.rs`. Slots
-  between `list-module` and `multi-arg`. Description should
-  highlight the `let __module = "..."` directive and qualified
-  dispatch.
-- Write `docs/multiple-file-demos-plan.md` describing:
-    - Current single-file model (Demo.source, include_str!).
-    - The CLI's multi-file driver model (run-ocaml.sh injects
-      `let __module = "..."` between files).
-    - The plsw reference UI: Demo.macros: &[DemoMacro], one
-      collapsible notebook cell per .msw file, add/remove/upload.
-    - Concrete OCaml-side mapping: Demo gains
-      `auxiliary_files: &'static [AuxFile]`; runner concatenates
-      with synthesized `__module` directives; new ModuleEditor
-      component mirroring plsw's MacroEditor.
-    - Phasing / scope so a future saga has a clear starting line.
-- Run `cargo test` to confirm the demo entry passes alphabetisation,
-  uniqueness, and the cleanly-halts integration test.
-- Commit as feat(demos) covering sync mapping, examples/modules.ml,
-  src/demos.rs, and docs/multiple-file-demos-plan.md.
+- Add `modules` to LOCAL_OVERRIDE in `scripts/sync-demos.sh` so
+  the script no longer overwrites the hand-edited `examples/modules.ml`.
+- Rewrite `examples/modules.ml` with inline trailing
+  `(* ... *)` comments, ending on the deliberate-failure pair:
+      Math.add 1 2  (* the right way: qualify into Math --> 3 *)
+      add 1 2       (* the wrong way: unqualified, EVAL ERROR expected *)
+- Update the description in `src/demos.rs` for `modules` to
+  call out that the trailing EVAL ERROR is the punchline
+  (no language-level try/catch; the REPL just resets per line).
+- Run `cargo test` to confirm the cleanly-halts test still passes
+  with the augmented source.
+- Commit as `fix(demos)`.
 
-### 002-rebuild-pages
+### 002-rebuild-pages-and-push
 
-- Run `scripts/build-pages.sh` to regenerate pages/ with the
-  modules demo in the bundle.
+- Run `scripts/build-pages.sh`.
 - Commit as chore(pages).
-- After agentrail complete --done, do the trailing .agentrail/
-  commit per project convention.
+- agentrail complete --done.
+- Trailing .agentrail/ commit.
+- Push origin main so GitHub Pages picks it up.

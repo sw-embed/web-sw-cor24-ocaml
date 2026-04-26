@@ -114,8 +114,11 @@ pub static DEMOS: &[Demo] = &[
         source: include_str!("../examples/modules.ml"),
         interactive: false,
         description: "User-defined module namespaces via the `let __module = \"...\"` \
-                      directive: define `Math.add`/`Math.double`, switch to module `Main`, \
-                      and dispatch by qualified name.",
+                      directive. Defines `Math.add`/`Math.double`, switches to `Main`, \
+                      shows three qualified calls succeeding -- then a deliberate \
+                      unqualified `add 1 2` to demonstrate namespace isolation. The \
+                      trailing `EVAL ERROR` is the punchline; the language has no \
+                      try/catch, the REPL just resets per line.",
     },
     Demo {
         name: "multi-arg",

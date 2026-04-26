@@ -1,7 +1,8 @@
-let __module = "Math"
-let add x y = x + y
-let double x = add x x
-let __module = "Main"
-Math.add 2 3
-Math.double 9
-add 1 2
+let __module = "Math"        (* enter module Math *)
+let add x y = x + y          (* defines Math.add *)
+let double x = add x x       (* Math.double; unqualified add resolves within Math *)
+let __module = "Main"        (* switch to Main; Math's bindings now require qualification *)
+Math.add 2 3                 (* qualified dispatch into Math --> 5 *)
+Math.double 9                (* qualified --> 18 *)
+Math.add 1 2                 (* the right way: qualify into Math --> 3 *)
+add 1 2                      (* the wrong way: unqualified add lives in Math, not Main -- EVAL ERROR expected *)

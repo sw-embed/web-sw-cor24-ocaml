@@ -72,11 +72,23 @@ COLLAPSE_NEWLINES=("led-blink")
 
 # Demos whose CLI source is unsuitable for the web demo (e.g. an
 # infinite recursion that overflows the OCaml interp's call stack
-# in the browser, where there's no terminal Ctrl-C). The web demo
-# ships a hand-edited examples/<name>.ml that this script must NOT
-# overwrite. Document the divergence here and in the demo's
-# docs/demos.md section.
-LOCAL_OVERRIDE=("led-toggle" "guess")
+# in the browser, where there's no terminal Ctrl-C, or a CLI test
+# that ends on a bare EVAL ERROR which reads as broken in the UI).
+# The web demo ships a hand-edited examples/<name>.ml that this
+# script must NOT overwrite. Document the divergence here and in
+# the demo's docs/demos.md section.
+#
+# - led-toggle: CLI source uses an infinite loop; web variant blocks
+#   on switch reads instead.
+# - guess: CLI source overflows the browser stack on losing branch.
+# - modules: CLI test (eval_module_namespace_directive.ml) ends on
+#   `add 1 2 -> EVAL ERROR` with no framing. Web variant adds inline
+#   `(* ... *)` comments plus a corrective `Math.add 1 2` before the
+#   deliberate-failure line so the trailing EVAL ERROR reads as the
+#   educational climax of the namespace-isolation story rather than a
+#   bug. The interpreter has no try/catch; the REPL resets eval_error
+#   per line and continues.
+LOCAL_OVERRIDE=("led-toggle" "guess" "modules")
 
 echo "Syncing demos from $CLI_DIR/tests/ -> $EXAMPLES_DIR/"
 for entry in "${MAPPING[@]}"; do
