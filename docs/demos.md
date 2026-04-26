@@ -207,6 +207,62 @@ EVAL ERROR
 
 ---
 
+## modules-multifile
+
+Phase 1 of the multi-file demos plan
+(`docs/multiple-file-demos-plan.md`). Two `.ml` files vendored under
+`examples/modules-multifile/`: `math.ml` defines `Math.add` /
+`Math.square` / `Math.double`; `main.ml` calls them by qualified name.
+The runner concatenates the files with synthesized
+`let __module = "..."` directives, exactly mirroring what the CLI's
+`scripts/run-ocaml.sh` does when invoked with multiple inputs. The
+editor pane shows only `main.ml`; the aux file is baked in read-only
+in this phase.
+
+The capitalisation rule for module names: strip `.ml`, uppercase the
+first character, leave the rest (so `math.ml` -> `Math`,
+`game_state.ml` -> `Game_state`).
+
+`main.ml`:
+
+```ocaml
+Math.add 2 3
+Math.square 5
+Math.double 7
+```
+
+`math.ml`:
+
+```ocaml
+let add x y = x + y
+let square x = x * x
+let double x = add x x
+```
+
+**Concatenated input fed to the REPL** (what `Demo::full_source`
+produces, what tests assert against):
+
+```ocaml
+let __module = "Math"
+let add x y = x + y
+let square x = x * x
+let double x = add x x
+let __module = "Main"
+Math.add 2 3
+Math.square 5
+Math.double 7
+```
+
+**Expected output:**
+
+```
+5
+25
+14
+```
+
+---
+
 ## higher-order-lists
 
 The classic functional-programming trio over the built-in `List`
@@ -811,12 +867,13 @@ let q = (1, 2, 3, 4) in match q with (1, _, 3, n) -> print_int n | (_, _, _, _) 
 match (0, "name", 9) with (0, s, _) -> print_endline s | (_, _, _) -> print_endline "miss"
 ```
 
-**Expected output:**
+**Expected output:** (3-tuples display as right-nested pairs in the
+REPL: `(1, 2, 3)` is internally `(1, (2, 3))`)
 
 ```
 INT 42
 4
-(1, 2, 3)
+(1, (2, 3))
 name
 ```
 

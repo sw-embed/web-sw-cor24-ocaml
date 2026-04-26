@@ -116,6 +116,41 @@ for entry in "${MAPPING[@]}"; do
     fi
 done
 
+# Multi-file demos (Phase 1 of docs/multiple-file-demos-plan.md).
+# Each entry is "main_cli:aux_cli,aux_cli,...:web_dir". The script
+# copies main_cli to <web_dir>/main.ml and each aux_cli to
+# <web_dir>/<aux_cli>. The web demo's name in src/demos.rs is the
+# directory basename (web_dir).
+MULTIFILE_MAPPING=(
+    "main:math:modules-multifile"
+)
+echo ""
+for entry in "${MULTIFILE_MAPPING[@]}"; do
+    main_src="${entry%%:*}"
+    rest="${entry#*:}"
+    aux_list="${rest%%:*}"
+    web_dir="${rest##*:}"
+    web_path="$EXAMPLES_DIR/$web_dir"
+    main_src_path="$CLI_DIR/tests/$main_src.ml"
+    if [ ! -f "$main_src_path" ]; then
+        echo "  warn: $main_src_path missing, skipping multi-file demo $web_dir" >&2
+        continue
+    fi
+    mkdir -p "$web_path"
+    cp "$main_src_path" "$web_path/main.ml"
+    printf "  %-30s <- tests/%s.ml\n" "$web_dir/main.ml" "$main_src"
+    IFS=',' read -ra aux_files <<< "$aux_list"
+    for aux in "${aux_files[@]}"; do
+        aux_src_path="$CLI_DIR/tests/$aux.ml"
+        if [ ! -f "$aux_src_path" ]; then
+            echo "  warn: $aux_src_path missing, skipping aux for $web_dir" >&2
+            continue
+        fi
+        cp "$aux_src_path" "$web_path/$aux.ml"
+        printf "  %-30s <- tests/%s.ml\n" "$web_dir/$aux.ml" "$aux"
+    done
+done
+
 # Hand-written hello.ml: default demo so first-time visitors see
 # output immediately. Not synced from the CLI.
 cat > "$EXAMPLES_DIR/hello.ml" <<'EOF'

@@ -108,10 +108,18 @@ impl App {
             .get(self.selected)
             .map(|d| d.interactive)
             .unwrap_or(false);
+        // Multi-file demos: concatenate aux files (each preceded by a
+        // synthesized `let __module = "..."` directive) before the
+        // user-edited main source. Single-file demos pass through
+        // unchanged.
+        let full_source = DEMOS
+            .get(self.selected)
+            .map(|d| d.concat_main(&self.source))
+            .unwrap_or_else(|| self.source.clone());
         self.session = Some(if interactive {
-            Session::new_interactive(&self.source)
+            Session::new_interactive(&full_source)
         } else {
-            Session::new(&self.source)
+            Session::new(&full_source)
         });
         self.input_line.clear();
         self.awaiting_input = false;

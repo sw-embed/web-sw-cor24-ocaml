@@ -25,7 +25,11 @@ fn every_non_interactive_demo_halts_cleanly() {
         if demo.interactive {
             continue;
         }
-        let mut s = Session::new(demo.source);
+        // full_source() is a passthrough for single-file demos and
+        // injects `let __module = "..."` directives + aux contents
+        // for multi-file demos (modules-multifile).
+        let full = demo.full_source();
+        let mut s = Session::new(&full);
         for _ in 0..MAX_TICKS {
             let r = s.tick();
             if r.done {
@@ -102,7 +106,8 @@ fn interactive_demos_reach_awaiting_input() {
         "expected at least one interactive demo"
     );
     for demo in interactive_demos {
-        let mut s = Session::new_interactive(demo.source);
+        let full = demo.full_source();
+        let mut s = Session::new_interactive(&full);
         for _ in 0..MAX_TICKS {
             let r = s.tick();
             if r.done || s.is_awaiting_input() {
@@ -136,7 +141,8 @@ const _: u64 = DEFAULT_BATCH;
 #[test]
 fn echo_loop_feed_and_check() {
     let demo = DEMOS.iter().find(|d| d.name == "echo-loop").unwrap();
-    let mut s = Session::new_interactive(demo.source);
+    let full = demo.full_source();
+    let mut s = Session::new_interactive(&full);
 
     // Tick until the seed is consumed and we're awaiting input.
     for _ in 0..MAX_TICKS {
