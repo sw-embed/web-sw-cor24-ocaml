@@ -1,6 +1,6 @@
 name = "add-modules-demo-and-multifile-plan"
 status = "active"
-current_step = 1
+current_step = 2
 created_at = "2026-04-25T21:19:16"
 plan_file = ".agentrail/plan.md"
 retroactive = false
