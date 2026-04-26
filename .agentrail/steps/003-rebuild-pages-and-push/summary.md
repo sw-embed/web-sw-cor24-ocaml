@@ -1,0 +1,1 @@
+Ran scripts/build-pages.sh to regenerate pages/ with the annotated modules demo source. WASM rolled 9832258c...->f086d276..., trunk updated index.html SRI in lockstep. Verified the annotated demo source ('the right way' / 'the wrong way' comments) is baked into the new WASM via strings(1). Committed as chore(pages).
