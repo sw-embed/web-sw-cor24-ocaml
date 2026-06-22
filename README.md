@@ -82,7 +82,7 @@ the sync script.
 
 - `asm/pvm.s` -- vendored copy of the canonical p-code VM from
   `../sw-cor24-pcode/vm/pvm.s`.
-- `build.rs` -- assembles `pvm.s` via `cor24_emulator::Assembler`,
+- `build.rs` -- assembles `pvm.s` via `cor24_assembler::Assembler`,
   captures the `code_ptr` label address, and bakes
   `assets/ocaml.p24m` into `OUT_DIR`.
 - `src/runner.rs` -- 270-line `Session` over `EmulatorCore`. Loads

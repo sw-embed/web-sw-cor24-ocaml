@@ -8,7 +8,7 @@
 #   the canonical p-code VM into pvm.bin at compile time.
 #
 # Note: pvm.bin is NOT vendored. It is assembled from asm/pvm.s
-# inside build.rs using the cor24-emulator assembler so it always
+# inside build.rs using the cor24-assembler crate so it always
 # matches the in-tree source.
 #
 # Usage: ./scripts/vendor-artifacts.sh
@@ -55,4 +55,4 @@ p24m_size="$(wc -c < "$ASSETS_DIR/ocaml.p24m" | tr -d ' ')"
 printf "  %-25s %8s lines\n" "asm/pvm.s"           "$pvm_lines"
 printf "  %-25s %8s bytes\n" "assets/ocaml.p24m"   "$p24m_size"
 echo ""
-echo "build.rs assembles asm/pvm.s into pvm.bin via cor24-emulator."
+echo "build.rs assembles asm/pvm.s into pvm.bin via cor24-assembler."

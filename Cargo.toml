@@ -26,7 +26,7 @@ gloo = "0.11"
 console_error_panic_hook = "0.1"
 
 [build-dependencies]
-cor24-emulator = { path = "../sw-cor24-emulator", default-features = false }
+cor24-assembler = { path = "../sw-cor24-x-assembler", default-features = false }
 
 [profile.release]
 opt-level = "z"
