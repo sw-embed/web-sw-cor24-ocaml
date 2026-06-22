@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Migrate off the removed in-tree assembler (`migrate-to-cor24-assembler`)
+
+- The COR24 split moved the assembler out of `cor24-emulator` into the
+  standalone `cor24-assembler` crate (`../sw-cor24-x-assembler`).
+  `build.rs` now calls `cor24_assembler::Assembler::new()` instead of
+  the removed `cor24_emulator::Assembler`, and the build-dependency in
+  `Cargo.toml` points at `cor24-assembler`. The assembler API is
+  unchanged (`assemble() -> AssemblyResult { bytes, errors, labels }`);
+  only the crate path moved. The runtime `cor24-emulator` dependency is
+  unchanged. Doc comments in `src/config.rs`, `README.md`, and
+  `scripts/vendor-artifacts.sh` updated to stop describing the assembler
+  as living in `cor24-emulator`.
 
 ## v0.2.0 -- 2026-04-26
 

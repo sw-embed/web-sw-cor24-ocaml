@@ -1,7 +1,7 @@
 //! Compile-time resources baked by `build.rs`:
 //!
 //! - `PVM_BIN`: machine code of `asm/pvm.s` assembled with the
-//!   cor24-emulator assembler. Loaded at address 0 of the emulator.
+//!   cor24-assembler crate. Loaded at address 0 of the emulator.
 //! - `OCAML_P24M`: the linked multi-unit p-code image produced by the
 //!   sw-cor24-ocaml toolchain (`scripts/vendor-artifacts.sh`). Loaded
 //!   at the OCaml interpreter's reserved address (`OCAML_LOAD_ADDR`).
